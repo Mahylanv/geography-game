@@ -6,6 +6,13 @@ function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
+const countryNameCorrections = {
+    "Swaziland": "Eswatini",
+    "Tchéquie": "République Tchèque",
+    "Congo (Rép. dém.)": "République Démocratique du Congo",
+    "Ahvenanmaa": "Åland"
+};
+
 // capitales traduites
 const capitalTranslations = {
     "kyiv": "Kiev", "beirut": "Beyrouth", "vienna": "Vienne", "copenhagen": "Copenhague",
@@ -30,6 +37,10 @@ const languageTranslations = {
     "Polish": "Polonais", "Hebrew": "Hébreu", "Finnish": "Finnois", "Danish": "Danois",
     "Norwegian": "Norvégien", "Czech": "Tchèque", "Hungarian": "Hongrois", "Thai": "Thaïlandais",
     "Vietnamese": "Vietnamien", "Indonesian": "Indonésien", "Armenian": "Arménien", "Ukrainian": "Ukrainien",
+    "Albanian": "Albanien", "Belarusian": "Biélorusse", "Burmese": "Birman", "Serbian": "Serbe", "Croatian": "Croate", "Bosnian": "Bosniaque",
+    "Bulgarian": "Bulgare", "Turc": "Turque", "Comorian": "Comorien", "Estonian": "Estonien", "Georgian": "Géorgien",
+    "Irish": "Irlandais", "Icelandic": "Islandais", "Latvian": "Letton", "Luxembourgish": "Luxembourgeois", "Macedonian": "Macédonien", "Malagasy": "Malgache",
+    "Romanian": "Roumain", "Nepali": "Népalais", "Slovak": "Slovaque",
 };
 
 // regions traduites
@@ -59,13 +70,14 @@ function CountriesList() {
                 const formattedCountries = res.data.map((country, index) => {
                     const capitalEn = country.capital ? country.capital[0] : "Inconnue";
                     const capitalFr = capitalTranslations[capitalEn.toLowerCase()] || capitalizeFirstLetter(capitalEn);
+                    const correctedName = countryNameCorrections[country.translations.fra.common] || country.translations.fra.common;
                     const languages = country.languages
                         ? Object.values(country.languages).map(lang => languageTranslations[lang] || lang).join(", ")
                         : "N/A";
 
                     return {
                         id: index,
-                        name: capitalizeFirstLetter(country.translations.fra.common),
+                        name: capitalizeFirstLetter(correctedName),
                         capital: capitalFr,
                         flag: country.flags?.png || "",
                         population: country.population ? country.population.toLocaleString() : "Inconnue",
