@@ -62,7 +62,10 @@ const translations = {
 
 function CountriesList() {
     const [countries, setCountries] = useState([]);
+    const [filteredCountries, setFilteredCountries] = useState([]);
     const [selectedCountryIndex, setSelectedCountryIndex] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedContinent, setSelectedContinent] = useState("");
 
     useEffect(() => {
         axios.get("https://restcountries.com/v3.1/all")
@@ -74,7 +77,6 @@ function CountriesList() {
                     const languages = country.languages
                         ? Object.values(country.languages).map(lang => languageTranslations[lang] || lang).join(", ")
                         : "N/A";
-
                     return {
                         id: index,
                         name: capitalizeFirstLetter(correctedName),
@@ -94,9 +96,47 @@ function CountriesList() {
 
                 formattedCountries.sort((a, b) => a.name.localeCompare(b.name));
                 setCountries(formattedCountries);
+                setFilteredCountries(formattedCountries);
             })
             .catch((err) => console.error("Erreur de récupération des pays :", err));
     }, []);
+
+    // **Ajout d'un effet pour gérer la fermeture avec "Échap"**
+    useEffect(() => {
+        function handleKeyDown(event) {
+            if (event.key === "Escape") {
+                closeDetails();
+            }
+        }
+
+        // Ajoute un écouteur d'événement uniquement si la modale est ouverte
+        if (selectedCountryIndex !== null) {
+            window.addEventListener("keydown", handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [selectedCountryIndex]);
+
+    // Fonction de filtrage
+    useEffect(() => {
+        let filtered = countries;
+
+        // Filtrer par continent
+        if (selectedContinent) {
+            filtered = filtered.filter((country) => country.continent === selectedContinent);
+        }
+
+        // Filtrer par recherche
+        filtered = filtered.filter((country) =>
+            country.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            country.capital.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            country.languages.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        setFilteredCountries(filtered);
+    }, [searchTerm, selectedContinent, countries]);
 
     function openCountryDetails(index) {
         setSelectedCountryIndex(index);
@@ -107,19 +147,48 @@ function CountriesList() {
     }
 
     function nextCountry() {
-        setSelectedCountryIndex((prevIndex) => (prevIndex + 1) % countries.length);
+        setSelectedCountryIndex((prevIndex) => (prevIndex + 1) % filteredCountries.length);
     }
 
     function prevCountry() {
-        setSelectedCountryIndex((prevIndex) => (prevIndex - 1 + countries.length) % countries.length);
+        setSelectedCountryIndex((prevIndex) => (prevIndex - 1 + filteredCountries.length) % filteredCountries.length);
     }
 
     return (
         <div className="container mx-auto px-4 py-8">
             <h2 className="text-3xl font-bold text-center mb-6">🌍 Liste des Pays</h2>
 
+            {/* Barre de recherche et filtre par continent */}
+            <div className="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
+                {/* Barre de recherche */}
+                <input
+                    type="text"
+                    placeholder="Rechercher un pays, une capitale, une langue..."
+                    className="px-4 py-2 w-96 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+
+                {/* Sélecteur de continent */}
+                <select
+                    className="px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-700"
+                    value={selectedContinent}
+                    onChange={(e) => setSelectedContinent(e.target.value)}
+                >
+                    <option value="">🌎 Tous les continents</option>
+                    <option value="Europe">🇪🇺 Europe</option>
+                    <option value="Asie">🌏 Asie</option>
+                    <option value="Afrique">🌍 Afrique</option>
+                    <option value="Amérique du Nord">🌎 Amérique du Nord</option>
+                    <option value="Amérique du Sud">🌎 Amérique du Sud</option>
+                    <option value="Océanie">🌊 Océanie</option>
+                    <option value="Antarctique">❄️ Antarctique</option>
+                </select>
+            </div>
+
+            {/* Liste des pays */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {countries.map((country, index) => (
+                {filteredCountries.map((country, index) => (
                     <div
                         key={index}
                         onClick={() => openCountryDetails(index)}
@@ -132,18 +201,23 @@ function CountriesList() {
                 ))}
             </div>
 
+            {/* Détails du pays */}
             {selectedCountryIndex !== null && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                <div
+                    id="modal-overlay"
+                    className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+                    onClick={(e) => e.target.id === "modal-overlay" && closeDetails()}
+                >
                     <div className="bg-white rounded-lg p-6 max-w-2xl w-full relative text-center">
-                        <button onClick={closeDetails} className="absolute top-2 right-2">✖</button>
-                        <h2 className="text-2xl font-bold">{countries[selectedCountryIndex].name}</h2>
-                        <img src={countries[selectedCountryIndex].flag} className="w-40 h-28 mx-auto my-4" />
-                        <p><strong>Capitale :</strong> {countries[selectedCountryIndex].capital}</p>
-                        <p><strong>Population :</strong> {countries[selectedCountryIndex].population}</p>
-                        <p><strong>Superficie :</strong> {countries[selectedCountryIndex].area}</p>
-                        <p><strong>Continent :</strong> {countries[selectedCountryIndex].continent}</p>
-                        <p><strong>Langues :</strong> {countries[selectedCountryIndex].languages}</p>
-                        <p><strong>Devise :</strong> {countries[selectedCountryIndex].currency}</p>
+                        <button onClick={closeDetails} className="absolute top-2 right-2 text-gray-600 text-2xl">✖</button>
+                        <h2 className="text-2xl font-bold">{filteredCountries[selectedCountryIndex].name}</h2>
+                        <img src={filteredCountries[selectedCountryIndex].flag} className="w-40 h-28 mx-auto my-4" />
+                        <p><strong>Capitale :</strong> {filteredCountries[selectedCountryIndex].capital}</p>
+                        <p><strong>Population :</strong> {filteredCountries[selectedCountryIndex].population}</p>
+                        <p><strong>Superficie :</strong> {filteredCountries[selectedCountryIndex].area}</p>
+                        <p><strong>Continent :</strong> {filteredCountries[selectedCountryIndex].continent}</p>
+                        <p><strong>Langues :</strong> {filteredCountries[selectedCountryIndex].languages}</p>
+                        <p><strong>Devise :</strong> {filteredCountries[selectedCountryIndex].currency}</p>
                         <div className="flex justify-between mt-4">
                             <button onClick={prevCountry}>⬅️ Précédent</button>
                             <button onClick={nextCountry}>Suivant ➡️</button>

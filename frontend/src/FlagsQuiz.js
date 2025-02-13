@@ -45,6 +45,7 @@ function FlagsQuiz() {
         "antigua": "Antigua-et-Barbuda",
         "sandwich": "Géorgie du Sud-et-les Îles Sandwich du Sud",
         "sao tome": "São Tomé et Príncipe",
+        "svalbard": "Svalbard et Jan Mayen",
     };
 
     useEffect(() => {
