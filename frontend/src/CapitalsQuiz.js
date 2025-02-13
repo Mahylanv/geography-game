@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 
-// supprime accents, tirets, apostrophes
+// supprime accents, tirets, apostrophes et "City" ou "City of"
 function normalizeString(str) {
     return str
         .normalize("NFD")
@@ -9,6 +9,7 @@ function normalizeString(str) {
         .toLowerCase()
         .replace(/-/g, " ")
         .replace(/'/g, " ")
+        .replace(/\b(city of|city)\b/g, "") 
         .trim();
 }
 
