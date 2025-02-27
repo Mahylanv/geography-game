@@ -4,6 +4,8 @@ import Home from "./Home";
 import FlagsQuiz from "./FlagsQuiz";
 import CapitalsQuiz from "./CapitalsQuiz";
 import CountriesList from "./CountriesList";
+import BlurredFlagsQuiz from "./BlurredFlagQuiz";
+
 
 function App() {
     const [isOpen, setIsOpen] = useState(false);
@@ -38,7 +40,9 @@ function App() {
                         <NavLink to="/capitals" className={({ isActive }) =>
                             `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
                         }>🏛️ Quiz Capitales</NavLink>
-
+                        <NavLink to="/blurred-flags" className={({ isActive }) =>
+                            `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
+                        }>🌫️ Drapeau Flou</NavLink>
                         <NavLink to="/countries" className={({ isActive }) =>
                             `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
                         }>🌍 Liste des Pays</NavLink>
@@ -62,6 +66,7 @@ function App() {
                         <NavLink to="/" className="block hover:text-lime-400">🏠 Accueil</NavLink>
                         <NavLink to="/flags" className="block hover:text-lime-400">🏳️ Quiz Drapeaux</NavLink>
                         <NavLink to="/capitals" className="block hover:text-lime-400">🏛️ Quiz Capitales</NavLink>
+                        <NavLink to="/blurred-flags" className="block hover:text-lime-400">🌫️ Drapeau flou</NavLink>
                         <NavLink to="/countries" className="block hover:text-lime-400">🌍 Liste des Pays</NavLink>
                     </div>
                 )}
@@ -73,6 +78,7 @@ function App() {
                 <Route path="/flags" element={<FlagsQuiz />} />
                 <Route path="/capitals" element={<CapitalsQuiz />} />
                 <Route path="/countries" element={<CountriesList />} />
+                <Route path="/blurred-flags" element={<BlurredFlagsQuiz />} />
             </Routes>
         </Router>
     );

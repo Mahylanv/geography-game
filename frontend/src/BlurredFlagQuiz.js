@@ -1,53 +1,53 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-// supprime accents, tirets, apostrophes
 function normalizeString(str) {
     return str
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
-        .replace(/-/g, " ")
-        .replace(/'/g, " ")
+        .replace(/[-']/g, " ")
         .trim();
 }
 
-function FlagsQuiz() {
+const predefinedShortcuts = {
+    "usa": "États-Unis",
+    "rdc": "Congo (Rép. dém.)",
+    "vatican": "Cité du Vatican",
+    "eau": "Émirats Arabes Unis",
+    "uae": "Émirats Arabes Unis",
+    "uk": "Royaume-Uni",
+    "gb": "Royaume-Uni",
+    "nz": "Nouvelle-Zélande",
+    "rsa": "Afrique du Sud",
+    "rep dom": "République dominicaine",
+    "taiwan": "Taïwan",
+    "bosnie": "Bosnie Herzégovine",
+    "aland": "Ahvenanmaa",
+    "cap vert": "Îles du Cap-Vert",
+    "polynesie": "Polynésie française",
+    "sainte helene": "Sainte-Hélène, Ascension et Tristan da Cunha",
+    "palaos": "Palaos (Palau)",
+    "centrafrique": "République centrafricaine",
+    "eswatini": "Swaziland",
+    "vietnam": "Viet nam",
+    "saint vincent": "Saint-Vincent-et-les-Grenadines",
+    "antigua": "Antigua-et-Barbuda",
+    "sandwich": "Géorgie du Sud-et-les Îles Sandwich du Sud",
+    "sao tome": "São Tomé et Príncipe",
+    "svalbard": "Svalbard et Jan Mayen",
+    "papouasie": "Papouasie-Nouvelle-Guinée",
+};
+
+function BlurredFlagsQuiz() {
     const [countries, setCountries] = useState([]);
     const [current, setCurrent] = useState({});
     const [answer, setAnswer] = useState("");
     const [message, setMessage] = useState("");
+    const [blurLevel, setBlurLevel] = useState(35);
     const [showAnswer, setShowAnswer] = useState(false);
+    const [typingTimeout, setTypingTimeout] = useState(null);
     const [countryShortcuts, setCountryShortcuts] = useState({});
-
-    const predefinedShortcuts = {
-        "usa": "États-Unis",
-        "rdc": "Congo (Rép. dém.)",
-        "vatican": "Cité du Vatican",
-        "eau": "Émirats Arabes Unis",
-        "uae": "Émirats Arabes Unis",
-        "uk": "Royaume-Uni",
-        "gb": "Royaume-Uni",
-        "nz": "Nouvelle-Zélande",
-        "rsa": "Afrique du Sud",
-        "rep dom": "République dominicaine",
-        "taiwan": "Taïwan",
-        "bosnie": "Bosnie Herzégovine",
-        "aland": "Ahvenanmaa",
-        "cap vert": "Îles du Cap-Vert",
-        "polynesie": "Polynésie française",
-        "sainte helene": "Sainte-Hélène, Ascension et Tristan da Cunha",
-        "palaos": "Palaos (Palau)",
-        "centrafrique": "République centrafricaine",
-        "eswatini": "Swaziland",
-        "vietnam": "Viet nam",
-        "saint vincent": "Saint-Vincent-et-les-Grenadines",
-        "antigua": "Antigua-et-Barbuda",
-        "sandwich": "Géorgie du Sud-et-les Îles Sandwich du Sud",
-        "sao tome": "São Tomé et Príncipe",
-        "svalbard": "Svalbard et Jan Mayen",
-        "papouasie": "Papouasie-Nouvelle-Guinée",
-    };
 
     useEffect(() => {
         axios.get("https://restcountries.com/v3.1/all")
@@ -62,19 +62,20 @@ function FlagsQuiz() {
                     let name = normalizeString(country.name);
 
                     // Supprimer "Îles" et "Île"
-                    if (name.includes("iles ") || name.includes("ile ")) {
-                        const shortName = name.replace(/\b(iles|ile)\b/gi, "").trim();
+                    let shortName = name.replace(/\b(iles|ile)\b/gi, "").trim();
+
+                    if (shortName !== name) {
                         shortcuts[shortName] = country.name;
                     }
 
-                    // Ajouter versions sans tirets ni apostrophes
-                    const nameWithoutDash = name.replace(/-/g, " ");
-                    if (name !== nameWithoutDash) {
+                    // sans tirets ni apostrophes
+                    const nameWithoutDash = shortName.replace(/-/g, " ");
+                    if (shortName !== nameWithoutDash) {
                         shortcuts[nameWithoutDash] = country.name;
                     }
 
-                    const nameWithoutApostrophe = name.replace(/'/g, " ");
-                    if (name !== nameWithoutApostrophe) {
+                    const nameWithoutApostrophe = shortName.replace(/'/g, " ");
+                    if (shortName !== nameWithoutApostrophe) {
                         shortcuts[nameWithoutApostrophe] = country.name;
                     }
                 });
@@ -90,6 +91,7 @@ function FlagsQuiz() {
         setAnswer("");
         setMessage("");
         setShowAnswer(false);
+        setBlurLevel(35);
         setCurrent(countries[Math.floor(Math.random() * countries.length)]);
     }
 
@@ -107,10 +109,27 @@ function FlagsQuiz() {
             return;
         }
 
+        // Réduire le flou en cas de mauvaise réponse
+        setBlurLevel(prev => Math.max(0, prev - 6));
+
         if (manualValidation) {
             setMessage("❌ Incorrect !");
             setShowAnswer(true);
         }
+    }
+
+    function handleInputChange(e) {
+        setAnswer(e.target.value);
+
+        if (typingTimeout) {
+            clearTimeout(typingTimeout);
+        }
+
+        const newTimeout = setTimeout(() => {
+            checkAnswer(e.target.value);
+        }, 1000);
+
+        setTypingTimeout(newTimeout);
     }
 
     return (
@@ -118,23 +137,22 @@ function FlagsQuiz() {
             <h2 className="text-4xl font-bold mb-6">Quel est ce pays ?</h2>
 
             {current.flag && (
-                <div className="bg-white p-4 rounded-xl shadow-lg mb-4">
-                    <img src={current.flag} alt="Drapeau" className="w-80 mx-auto" />
-                    <p className={`mt-4 text-lg font-semibold ${message.includes("✅") ? "text-green-500" : "text-red-500"}`}>
-                        {message}
-                    </p>
+                <div className="relative">
+                    <img
+                        src={current.flag}
+                        alt="Drapeau"
+                        className="w-80 h-56 mx-auto rounded-lg transition-all"
+                        style={{ filter: `blur(${blurLevel}px)` }}
+                    />
                 </div>
             )}
 
             <input
                 type="text"
                 value={answer}
-                onChange={(e) => {
-                    setAnswer(e.target.value);
-                    checkAnswer(e.target.value);
-                }}
+                onChange={handleInputChange}
                 placeholder="Entrez le nom du pays"
-                className="px-4 py-2 w-64 rounded-lg text-black border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                className="px-4 py-2 w-64 rounded-lg text-black border-2 border-gray-300 focus:border-blue-500 focus:outline-none mt-6"
             />
 
             <div className="flex gap-4 mt-4">
@@ -155,9 +173,11 @@ function FlagsQuiz() {
                 </button>
             )}
 
-           
+            <p className={`mt-4 text-lg font-semibold ${message.includes("✅") ? "text-green-500" : "text-red-500"}`}>
+                {message}
+            </p>
         </div>
     );
 }
 
-export default FlagsQuiz;
+export default BlurredFlagsQuiz;
