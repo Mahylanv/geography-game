@@ -137,6 +137,9 @@ function CapitalsQuiz() {
             {current.flag && (
                 <div className="bg-white p-4 rounded-xl shadow-lg mb-4">
                     <img src={current.flag} alt="Drapeau" className="w-80 object-cover mx-auto" />
+                    <p className={`mt-4 text-lg font-semibold ${message.includes("✅") ? "text-green-500" : "text-red-500"}`}>
+                        {message}
+                    </p>
                 </div>
             )}
 
@@ -169,9 +172,7 @@ function CapitalsQuiz() {
                 </button>
             )}
 
-            <p className={`mt-4 text-lg font-semibold ${message.includes("✅") ? "text-green-500" : "text-red-500"}`}>
-                {message}
-            </p>
+        
         </div>
     );
 }

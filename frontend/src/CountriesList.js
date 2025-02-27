@@ -155,7 +155,7 @@ function CountriesList() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 ">
             <h2 className="text-3xl font-bold text-center mb-6">🌍 Liste des Pays</h2>
 
             {/* Barre de recherche et filtre par continent */}
