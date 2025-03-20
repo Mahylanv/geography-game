@@ -54,44 +54,35 @@ function App() {
                             `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
                         }>🌍 Liste des Pays</NavLink>
 
+
                         {/* 🌍 Dropdown pour les drapeaux par continent */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setIsFlagsDropdownOpen(!isFlagsDropdownOpen)}
-                                className="px-4 py-2 rounded hover:bg-gray-700 flex items-center gap-2"
-                            >
+                        <div className="relative group">
+                            <button className="px-4 py-2 rounded hover:bg-gray-700 flex items-center gap-2">
                                 🏳️ Drapeaux ▾
                             </button>
-                            {isFlagsDropdownOpen && (
-                                <div className="absolute top-10 left-0 bg-gray-800 rounded shadow-lg py-2 w-56">
-                                    <NavLink to="/europe-flags" className="block px-4 py-2 hover:bg-gray-700">🇪🇺 Europe</NavLink>
-                                    <NavLink to="/africa-flags" className="block px-4 py-2 hover:bg-gray-700">🌍 Afrique</NavLink>
-                                    <NavLink to="/asia-flags" className="block px-4 py-2 hover:bg-gray-700">🌏 Asie</NavLink>
-                                    <NavLink to="/north-america-flags" className="block px-4 py-2 hover:bg-gray-700">🌎 Amérique du Nord</NavLink>
-                                    <NavLink to="/south-america-flags" className="block px-4 py-2 hover:bg-gray-700">🌎 Amérique du Sud</NavLink>
-                                    <NavLink to="/oceania-flags" className="block px-4 py-2 hover:bg-gray-700">🌊 Océanie</NavLink>
-                                </div>
-                            )}
+                            <div className="absolute top-10 left-0 bg-gray-800 rounded shadow-lg py-2 w-56 hidden group-hover:block">
+                                <NavLink to="/europe-flags" className="block px-4 py-2 hover:bg-gray-700">🇪🇺 Europe</NavLink>
+                                <NavLink to="/africa-flags" className="block px-4 py-2 hover:bg-gray-700">🌍 Afrique</NavLink>
+                                <NavLink to="/asia-flags" className="block px-4 py-2 hover:bg-gray-700">🌏 Asie</NavLink>
+                                <NavLink to="/north-america-flags" className="block px-4 py-2 hover:bg-gray-700">🌎 Amérique du Nord</NavLink>
+                                <NavLink to="/south-america-flags" className="block px-4 py-2 hover:bg-gray-700">🌎 Amérique du Sud</NavLink>
+                                <NavLink to="/oceania-flags" className="block px-4 py-2 hover:bg-gray-700">🌊 Océanie</NavLink>
+                            </div>
                         </div>
 
                         {/* 🏛️ Dropdown pour les capitales par continent */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setIsCapitalsDropdownOpen(!isCapitalsDropdownOpen)}
-                                className="px-4 py-2 rounded hover:bg-gray-700 flex items-center gap-2"
-                            >
+                        <div className="relative group">
+                            <button className="px-4 py-2 rounded hover:bg-gray-700 flex items-center gap-2">
                                 🏛️ Capitales ▾
                             </button>
-                            {isCapitalsDropdownOpen && (
-                                <div className="absolute top-10 left-0 bg-gray-800 rounded shadow-lg py-2 w-56">
-                                    <NavLink to="/europe-capitals" className="block px-4 py-2 hover:bg-gray-700">🇪🇺 Europe</NavLink>
-                                    <NavLink to="/africa-capitals" className="block px-4 py-2 hover:bg-gray-700">🌍 Afrique</NavLink>
-                                    <NavLink to="/asia-capitals" className="block px-4 py-2 hover:bg-gray-700">🌏 Asie</NavLink>
-                                    <NavLink to="/north-america-capitals" className="block px-4 py-2 hover:bg-gray-700">🌎 Amérique du Nord</NavLink>
-                                    <NavLink to="/south-america-capitals" className="block px-4 py-2 hover:bg-gray-700">🌎 Amérique du Sud</NavLink>
-                                    <NavLink to="/oceania-capitals" className="block px-4 py-2 hover:bg-gray-700">🌊 Océanie</NavLink>
-                                </div>
-                            )}
+                            <div className="absolute top-10 left-0 bg-gray-800 rounded shadow-lg py-2 w-56 hidden group-hover:block">
+                                <NavLink to="/europe-capitals" className="block px-4 py-2 hover:bg-gray-700">🇪🇺 Europe</NavLink>
+                                <NavLink to="/africa-capitals" className="block px-4 py-2 hover:bg-gray-700">🌍 Afrique</NavLink>
+                                <NavLink to="/asia-capitals" className="block px-4 py-2 hover:bg-gray-700">🌏 Asie</NavLink>
+                                <NavLink to="/north-america-capitals" className="block px-4 py-2 hover:bg-gray-700">🌎 Amérique du Nord</NavLink>
+                                <NavLink to="/south-america-capitals" className="block px-4 py-2 hover:bg-gray-700">🌎 Amérique du Sud</NavLink>
+                                <NavLink to="/oceania-capitals" className="block px-4 py-2 hover:bg-gray-700">🌊 Océanie</NavLink>
+                            </div>
                         </div>
                     </div>
                     {/* 🍔 Bouton Menu Mobile */}
