@@ -7,6 +7,8 @@ import CountriesList from "./CountriesList";
 import BlurredFlagsQuiz from "./BlurredFlagQuiz";
 import ContinentFlagsQuiz from "./continent/ContinentFlagQuizz";
 import ContinentCapitalsQuiz from "./continent/ContinentCapitalQuizz";
+import BordersQuiz from "./BordersQuiz";
+
 
 function App() {
     const [isOpen, setIsOpen] = useState(false);
@@ -53,6 +55,10 @@ function App() {
                         <NavLink to="/countries" className={({ isActive }) =>
                             `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
                         }>🌍 Liste des Pays</NavLink>
+
+                        <NavLink to="/borders" className={({ isActive }) =>
+                            `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
+                        }>🌍 Pays frontaliers</NavLink>
 
 
                         {/* 🌍 Dropdown pour les drapeaux par continent */}
@@ -142,6 +148,7 @@ function App() {
                 <Route path="/capitals" element={<CapitalsQuiz />} />
                 <Route path="/countries" element={<CountriesList />} />
                 <Route path="/blurred-flags" element={<BlurredFlagsQuiz />} />
+                <Route path="/borders" element={<BordersQuiz />} />
 
                 {/* Routes pour les drapeaux par continent */}
                 <Route path="/europe-flags" element={<ContinentFlagsQuiz continent="Europe" />} />
