@@ -147,6 +147,7 @@ function ContinentCapitalsQuiz({ continent }) {
 
         if (normalizedUserAnswer === normalizedCorrectAnswer) {
             setMessage("✅ Correct !");
+            setShowAnswer(false); 
             setTimeout(loadNextCapital, 1000);
             return;
         }
@@ -189,9 +190,27 @@ function ContinentCapitalsQuiz({ continent }) {
                 className="px-4 py-2 w-64 rounded-lg text-black border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
             />
 
-            <button onClick={loadNextCapital} className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition">
-                Passer
-            </button>
+            <div className="flex gap-4 mt-4">
+                <button
+                    onClick={() => checkAnswer(answer, true)}
+                    className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg transition"
+                >
+                    Valider
+                </button>
+
+                <button onClick={loadNextCapital} className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition">
+                    Passer
+                </button>
+            </div>
+
+            {showAnswer && (
+                <button
+                    onClick={() => setMessage(`La bonne réponse était : ${current.capital}`)}
+                    className="mt-4 px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-lg shadow-lg transition"
+                >
+                    Réponse
+                </button>
+            )}
         </div>
     );
 }
