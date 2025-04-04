@@ -218,6 +218,17 @@ function CountriesList() {
                         <p><strong>Continent :</strong> {filteredCountries[selectedCountryIndex].continent}</p>
                         <p><strong>Langues :</strong> {filteredCountries[selectedCountryIndex].languages}</p>
                         <p><strong>Devise :</strong> {filteredCountries[selectedCountryIndex].currency}</p>
+                        <p className="mt-4">
+                            <strong>📍 Localisation :</strong>
+                            <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(filteredCountries[selectedCountryIndex].name)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline ml-2"
+                            >
+                                Voir sur Google Maps 🌍
+                            </a>
+                        </p>
                         <div className="flex justify-between mt-4">
                             <button onClick={prevCountry}>⬅️ Précédent</button>
                             <button onClick={nextCountry}>Suivant ➡️</button>
