@@ -8,6 +8,7 @@ import BlurredFlagsQuiz from "./BlurredFlagQuiz";
 import ContinentFlagsQuiz from "./continent/ContinentFlagQuizz";
 import ContinentCapitalsQuiz from "./continent/ContinentCapitalQuizz";
 import BordersQuiz from "./BordersQuiz";
+import CoutrieDle from "./CoutrieDle";
 
 
 function App() {
@@ -40,6 +41,10 @@ function App() {
                             `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
                         }>🏠 Accueil</NavLink>
 
+                        <NavLink to="/dle" className={({ isActive }) =>
+                            `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
+                        }>🌍 Daily Dle</NavLink>
+
                         <NavLink to="/flags" className={({ isActive }) =>
                             `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
                         }>🏳️ Quiz Drapeaux</NavLink>
@@ -52,13 +57,15 @@ function App() {
                             `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
                         }>🌫️ Drapeau Flou</NavLink>
 
+                        <NavLink to="/borders" className={({ isActive }) =>
+                            `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
+                        }>🌍 Pays frontaliers</NavLink>
+
                         <NavLink to="/countries" className={({ isActive }) =>
                             `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
                         }>🌍 Liste des Pays</NavLink>
 
-                        <NavLink to="/borders" className={({ isActive }) =>
-                            `px-4 py-2 rounded ${isActive ? "bg-blue-800" : "hover:bg-gray-700"}`
-                        }>🌍 Pays frontaliers</NavLink>
+                        
 
 
                         {/* 🌍 Dropdown pour les drapeaux par continent */}
@@ -92,7 +99,7 @@ function App() {
                         </div>
                     </div>
                     {/* 🍔 Bouton Menu Mobile */}
-                    <button className="md:hidden focus:outline-none text-2xl z-10" onClick={() => setIsOpen(!isOpen)}>
+                    <button className="md:hidden focus:outline-none text-2xl z-[100]" onClick={() => setIsOpen(!isOpen)}>
                         {isOpen ? "✖" : "☰"}
                     </button>
                 </div>
@@ -100,6 +107,7 @@ function App() {
                 {isOpen && (
                     <div className="md:hidden pt-20 fixed inset-0 bg-gray-900 bg-opacity-90 flex flex-col items-center space-y-6 py-10 z-50">
                         <NavLink to="/" className="text-xl hover:text-lime-400" onClick={() => setIsOpen(false)}>🏠 Accueil</NavLink>
+                        <NavLink to="/dle" className="text-xl hover:text-lime-400" onClick={() => setIsOpen(false)}>🌍 Daily Dle</NavLink>
                         <NavLink to="/flags" className="text-xl hover:text-lime-400" onClick={() => setIsOpen(false)}>🏳️ Quiz Drapeaux</NavLink>
                         <NavLink to="/capitals" className="text-xl hover:text-lime-400" onClick={() => setIsOpen(false)}>🏛️ Quiz Capitales</NavLink>
                         <NavLink to="/blurred-flags" className="text-xl hover:text-lime-400" onClick={() => setIsOpen(false)}>🌫️ Drapeau Flou</NavLink>
@@ -158,6 +166,7 @@ function App() {
                 <Route path="/countries" element={<CountriesList />} />
                 <Route path="/blurred-flags" element={<BlurredFlagsQuiz />} />
                 <Route path="/borders" element={<BordersQuiz />} />
+                <Route path="/dle" element={<CoutrieDle />} />
 
                 {/* Routes pour les drapeaux par continent */}
                 <Route path="/europe-flags" element={<ContinentFlagsQuiz continent="Europe" />} />
