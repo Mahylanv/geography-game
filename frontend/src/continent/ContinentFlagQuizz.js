@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-// supprime accents, tirets, apostrophes
 function normalizeString(str) {
     return str
         .normalize("NFD")
@@ -12,7 +11,40 @@ function normalizeString(str) {
         .trim();
 }
 
-function FlagsQuiz() {
+const predefinedShortcuts = {
+    "usa": "États-Unis",
+    "rdc": "Congo (Rép. dém.)",
+    "vatican": "Cité du Vatican",
+    "eau": "Émirats Arabes Unis",
+    "uae": "Émirats Arabes Unis",
+    "uk": "Royaume-Uni",
+    "gb": "Royaume-Uni",
+    "nz": "Nouvelle-Zélande",
+    "rsa": "Afrique du Sud",
+    "rep dom": "République dominicaine",
+    "taiwan": "Taïwan",
+    "bosnie": "Bosnie Herzégovine",
+    "cap vert": "Îles du Cap-Vert",
+    "polynesie": "Polynésie française",
+    "papouasie": "Papouasie-Nouvelle-Guinée",
+    "eswatini": "Swaziland",
+    "vietnam": "Viet nam",
+    "saint vincent": "Saint-Vincent-et-les-Grenadines",
+    "antigua": "Antigua-et-Barbuda",
+    "sandwich": "Géorgie du Sud-et-les Îles Sandwich du Sud",
+    "sao tome": "São Tomé et Príncipe",
+};
+
+const CONTINENTS = {
+    "Europe": "Europe",
+    "Afrique": "Africa",
+    "Asie": "Asia",
+    "Amérique du Nord": "North America",
+    "Amérique du Sud": "South America",
+    "Océanie": "Oceania",
+};
+
+function ContinentFlagsQuiz({ continent }) {
     const [countries, setCountries] = useState([]);
     const [current, setCurrent] = useState({});
     const [answer, setAnswer] = useState("");
@@ -20,42 +52,15 @@ function FlagsQuiz() {
     const [showAnswer, setShowAnswer] = useState(false);
     const [countryShortcuts, setCountryShortcuts] = useState({});
 
-    const predefinedShortcuts = {
-        "usa": "États-Unis",
-        "rdc": "Congo (Rép. dém.)",
-        "vatican": "Cité du Vatican",
-        "eau": "Émirats Arabes Unis",
-        "uae": "Émirats Arabes Unis",
-        "uk": "Royaume-Uni",
-        "gb": "Royaume-Uni",
-        "nz": "Nouvelle-Zélande",
-        "rsa": "Afrique du Sud",
-        "rep dom": "République dominicaine",
-        "taiwan": "Taïwan",
-        "bosnie": "Bosnie Herzégovine",
-        "aland": "Ahvenanmaa",
-        "cap vert": "Îles du Cap-Vert",
-        "polynesie": "Polynésie française",
-        "sainte helene": "Sainte-Hélène, Ascension et Tristan da Cunha",
-        "palaos": "Palaos (Palau)",
-        "centrafrique": "République centrafricaine",
-        "eswatini": "Swaziland",
-        "vietnam": "Viet nam",
-        "saint vincent": "Saint-Vincent-et-les-Grenadines",
-        "antigua": "Antigua-et-Barbuda",
-        "sandwich": "Géorgie du Sud-et-les Îles Sandwich du Sud",
-        "sao tome": "São Tomé et Príncipe",
-        "svalbard": "Svalbard et Jan Mayen",
-        "papouasie": "Papouasie-Nouvelle-Guinée",
-    };
-
     useEffect(() => {
         axios.get("https://restcountries.com/v3.1/all")
             .then((res) => {
-                const formattedCountries = res.data.map(country => ({
-                    name: country.translations?.fra?.common || country.name.common,
-                    flag: country.flags.png
-                }));
+                const formattedCountries = res.data
+                    .filter(country => country.continents?.includes(CONTINENTS[continent])) // Filtrer par continent
+                    .map(country => ({
+                        name: country.translations?.fra?.common || country.name.common,
+                        flag: country.flags.png
+                    }));
 
                 let shortcuts = { ...predefinedShortcuts };
                 formattedCountries.forEach(country => {
@@ -67,7 +72,7 @@ function FlagsQuiz() {
                         shortcuts[shortName] = country.name;
                     }
 
-                    // Ajouter versions sans tirets ni apostrophes
+                    // versions sans tirets ni apostrophes
                     const nameWithoutDash = name.replace(/-/g, " ");
                     if (name !== nameWithoutDash) {
                         shortcuts[nameWithoutDash] = country.name;
@@ -84,7 +89,7 @@ function FlagsQuiz() {
                 setCurrent(formattedCountries[Math.floor(Math.random() * formattedCountries.length)]);
             })
             .catch((err) => console.error("Erreur de récupération des pays :", err));
-    }, []);
+    }, [continent]); // Dépendance à `continent` pour recharger quand il change
 
     function loadNextFlag() {
         setAnswer("");
@@ -115,7 +120,7 @@ function FlagsQuiz() {
 
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-green-400 to-blue-500 text-white text-center">
-            <h2 className="text-4xl font-bold mb-6">Quel est ce pays ?</h2>
+            <h2 className="text-4xl font-bold mb-6">Quel est ce pays ? ({continent})</h2>
 
             {current.flag && (
                 <div className="bg-white p-4 rounded-xl shadow-lg mb-4">
@@ -154,10 +159,8 @@ function FlagsQuiz() {
                     Réponse
                 </button>
             )}
-
-           
         </div>
     );
 }
 
-export default FlagsQuiz;
+export default ContinentFlagsQuiz;
