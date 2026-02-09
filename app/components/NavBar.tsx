@@ -39,6 +39,8 @@ export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isFlagsDropdownOpen, setIsFlagsDropdownOpen] = useState(false);
   const [isCapitalsDropdownOpen, setIsCapitalsDropdownOpen] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartScroll = useRef(0);
@@ -66,24 +68,41 @@ export default function NavBar() {
     setIsOpen(false);
     setIsFlagsDropdownOpen(false);
     setIsCapitalsDropdownOpen(false);
+    setDragOffset(0);
+    setIsDragging(false);
+    touchStartY.current = null;
   }
 
   function handleSheetTouchStart(event: TouchEvent<HTMLDivElement>) {
     touchStartY.current = event.touches[0]?.clientY ?? null;
     touchStartScroll.current = sheetRef.current?.scrollTop ?? 0;
+    setIsDragging(touchStartScroll.current <= 0);
   }
 
   function handleSheetTouchMove(event: TouchEvent<HTMLDivElement>) {
     if (touchStartY.current === null) return;
+    if (touchStartScroll.current > 0) return;
     const currentY = event.touches[0]?.clientY ?? 0;
     const delta = currentY - touchStartY.current;
-    if (touchStartScroll.current <= 0 && delta > 80) {
-      closeMenu();
-      touchStartY.current = null;
+    if (delta <= 0) {
+      setDragOffset(0);
+      return;
     }
+    setDragOffset(delta);
   }
 
   function handleSheetTouchEnd() {
+    if (dragOffset > 0) {
+      const sheetHeight = sheetRef.current?.offsetHeight ?? 0;
+      const threshold = Math.min(220, sheetHeight * 0.3);
+      if (dragOffset > threshold) {
+        closeMenu();
+        touchStartY.current = null;
+        return;
+      }
+    }
+    setDragOffset(0);
+    setIsDragging(false);
     touchStartY.current = null;
   }
 
@@ -152,11 +171,16 @@ export default function NavBar() {
         >
           <div
             ref={sheetRef}
-            className="absolute inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] bottom-0 overflow-y-auto rounded-t-3xl bg-white px-6 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-2xl"
+            className="absolute inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] bottom-0 overflow-y-auto rounded-t-3xl bg-white px-6 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-2xl transition-transform duration-300"
+            style={{
+              transform: dragOffset ? `translateY(${dragOffset}px)` : undefined,
+              transition: isDragging ? "none" : "transform 0.3s ease"
+            }}
             onClick={(e) => e.stopPropagation()}
             onTouchStart={handleSheetTouchStart}
             onTouchMove={handleSheetTouchMove}
             onTouchEnd={handleSheetTouchEnd}
+            onTouchCancel={handleSheetTouchEnd}
           >
             <div className="mb-4 h-1.5 w-12 rounded-full bg-slate-200 mx-auto" />
             <div className="flex flex-col gap-2">
@@ -165,7 +189,7 @@ export default function NavBar() {
                   key={item.href}
                   href={item.href}
                   className="rounded-2xl px-4 py-3 text-base font-semibold text-slate-900 hover:bg-slate-100"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeMenu}
                 >
                   {item.label}
                 </Link>
@@ -185,10 +209,7 @@ export default function NavBar() {
                         key={item.href}
                         href={item.href}
                         className="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
-                        onClick={() => {
-                          setIsFlagsDropdownOpen(false);
-                          setIsOpen(false);
-                        }}
+                        onClick={closeMenu}
                       >
                         {item.label}
                       </Link>
@@ -211,10 +232,7 @@ export default function NavBar() {
                         key={item.href}
                         href={item.href}
                         className="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
-                        onClick={() => {
-                          setIsCapitalsDropdownOpen(false);
-                          setIsOpen(false);
-                        }}
+                        onClick={closeMenu}
                       >
                         {item.label}
                       </Link>
