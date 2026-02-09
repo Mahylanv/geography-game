@@ -44,6 +44,7 @@ export default function NavBar() {
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartScroll = useRef(0);
+  const scrollLockY = useRef(0);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -58,8 +59,32 @@ export default function NavBar() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
+    if (isOpen) {
+      scrollLockY.current = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollLockY.current}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+      if (scrollLockY.current) {
+        window.scrollTo(0, scrollLockY.current);
+      }
+      scrollLockY.current = 0;
+    }
     return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
       document.body.style.overflow = "";
     };
   }, [isOpen]);
@@ -166,12 +191,12 @@ export default function NavBar() {
 
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm"
+          className="lg:hidden fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm overscroll-contain touch-none"
           onClick={closeMenu}
         >
           <div
             ref={sheetRef}
-            className="absolute inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] bottom-0 overflow-y-auto rounded-t-3xl bg-white px-6 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-2xl transition-transform duration-300"
+            className="absolute inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] bottom-0 overflow-y-auto overscroll-contain touch-pan-y rounded-t-3xl bg-white px-6 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-2xl transition-transform duration-300"
             style={{
               transform: dragOffset ? `translateY(${dragOffset}px)` : undefined,
               transition: isDragging ? "none" : "transform 0.3s ease"
