@@ -20,7 +20,6 @@ Avant de lancer le projet, assure-toi d'avoir les éléments suivants installés
 
 - [Node.js](https://nodejs.org/) (version 18 ou plus récente)
 - [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/)
-- [Docker](https://www.docker.com/) (optionnel pour exécuter le projet en conteneur)
 
 ---
 
@@ -31,29 +30,12 @@ git clone https://github.com/Mahylanv/geography-game.git
 cd geodex
 
 ### Installer les dépendances
-1) Backend (Node.js + Express)
-cd backend
 npm install
 
-2) Frontend (React + TailwindCSS)
-cd ../frontend
-npm install
-
-Ajoute un fichier .env dans le dossier backend avec les informations suivantes :
-PORT=5000
-
-Ajoute un fichier .env dans le dossier frontend avec :
-REACT_APP_BACKEND_URL=http://localhost:5000
-
-### Lancer avec Docker
-docker-compose up --build
-
-### Lancer avec npm start
-cd backend
+### Lancer en dev
 npm run dev
 
-cd frontend
-npm start
+L'application tourne sur http://localhost:3001 et l'API est exposée sur /api/countries.
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -80,7 +62,6 @@ Before launching the project, make sure you have the following installed on your
 
 - [Node.js](https://nodejs.org/) (version 18 or later)
 - [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-- Docker](https://www.docker.com/) (optional to run the project in a container)
 
 ---
 
@@ -91,24 +72,10 @@ git clone https://github.com/Mahylanv/geography-game.git
 cd geodex
 
 ### Install dependencies
-1) Backend (Node.js + Express)
-cd backend
 npm install
 
-2) Frontend (React + TailwindCSS)
-cd ../frontend
-npm install
+### Run in dev
+npm run dev
 
-Adds an .env file to the backend folder with the following information:
-PORT=5000
-
-Adds an .env file to the frontend folder with :
-REACT_APP_BACKEND_URL=http://localhost:5000
-
-### Launch with Docker
-docker-compose up --build
-
-### Run with npm start
-cd backend
-
+The app runs on http://localhost:3001 and the API is exposed at /api/countries.
 
