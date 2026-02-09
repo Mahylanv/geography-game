@@ -7,6 +7,7 @@ type Country = {
   name: string;
   capital: string;
   flag: string;
+  unMember: boolean;
 };
 
 function normalizeString(str: string) {
@@ -21,6 +22,7 @@ function normalizeString(str: string) {
 }
 
 export default function CapitalsQuiz() {
+  const [allCountries, setAllCountries] = useState<Country[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [current, setCurrent] = useState<Country | null>(null);
   const [answer, setAnswer] = useState("");
@@ -30,6 +32,7 @@ export default function CapitalsQuiz() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [onlyUN, setOnlyUN] = useState(false);
 
   const predefinedShortcuts = useMemo(
     () => ({
@@ -93,30 +96,11 @@ export default function CapitalsQuiz() {
           .map((country: any) => ({
             name: country.translations?.fra?.common || country.name.common,
             capital: country.translations?.fra?.capital || country.capital[0],
-            flag: country.flags.png
+            flag: country.flags.png,
+            unMember: country.unMember === true
           }));
 
-        const shortcuts: Record<string, string> = { ...predefinedShortcuts };
-        formattedCountries.forEach((country: Country) => {
-          const capitalEn = normalizeString(country.capital);
-          const capitalFr = normalizeString(country.capital);
-
-          shortcuts[capitalFr] = capitalEn;
-
-          const capitalWithoutDash = capitalFr.replace(/-/g, " ");
-          if (capitalFr !== capitalWithoutDash) {
-            shortcuts[capitalWithoutDash] = capitalEn;
-          }
-
-          const capitalWithoutApostrophe = capitalFr.replace(/'/g, " ");
-          if (capitalFr !== capitalWithoutApostrophe) {
-            shortcuts[capitalWithoutApostrophe] = capitalEn;
-          }
-        });
-
-        setCountries(formattedCountries);
-        setCapitalShortcuts(shortcuts);
-        setCurrent(formattedCountries[Math.floor(Math.random() * formattedCountries.length)]);
+        setAllCountries(formattedCountries);
       })
       .catch((err) => {
         if (!active) return;
@@ -131,7 +115,36 @@ export default function CapitalsQuiz() {
     return () => {
       active = false;
     };
-  }, [predefinedShortcuts, reloadKey]);
+  }, [reloadKey]);
+
+  useEffect(() => {
+    const filtered = onlyUN ? allCountries.filter((country) => country.unMember) : allCountries;
+    setCountries(filtered);
+
+    const shortcuts: Record<string, string> = { ...predefinedShortcuts };
+    filtered.forEach((country) => {
+      const capitalEn = normalizeString(country.capital);
+      const capitalFr = normalizeString(country.capital);
+
+      shortcuts[capitalFr] = capitalEn;
+
+      const capitalWithoutDash = capitalFr.replace(/-/g, " ");
+      if (capitalFr !== capitalWithoutDash) {
+        shortcuts[capitalWithoutDash] = capitalEn;
+      }
+
+      const capitalWithoutApostrophe = capitalFr.replace(/'/g, " ");
+      if (capitalFr !== capitalWithoutApostrophe) {
+        shortcuts[capitalWithoutApostrophe] = capitalEn;
+      }
+    });
+
+    setCapitalShortcuts(shortcuts);
+    setCurrent(filtered.length > 0 ? filtered[Math.floor(Math.random() * filtered.length)] : null);
+    setAnswer("");
+    setMessage("");
+    setShowAnswer(false);
+  }, [allCountries, onlyUN, predefinedShortcuts]);
 
   function loadNextCapital() {
     setAnswer("");
@@ -163,24 +176,34 @@ export default function CapitalsQuiz() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-indigo-400 to-purple-500 text-white text-center">
-      <h2 className="text-4xl font-bold mb-6">Quelle est la capitale de ce pays ?</h2>
+    <div className="page-shell flex flex-col items-center justify-center text-center">
+      <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-slate-900">Quelle est la capitale de ce pays ?</h2>
 
-      {isLoading && <p className="text-white/90 mb-4">Chargement des pays...</p>}
+      <label className="mb-4 flex items-center gap-2 text-sm text-slate-600">
+        <input
+          type="checkbox"
+          checked={onlyUN}
+          onChange={(e) => setOnlyUN(e.target.checked)}
+          className="h-4 w-4"
+        />
+        <span>Pays ONU seulement</span>
+      </label>
+
+      {isLoading && <p className="text-slate-600 mb-4">Chargement des pays...</p>}
 
       {loadError && (
-        <div className="mb-4 rounded-lg border border-rose-200 bg-white/90 px-4 py-3 text-rose-700">
+        <div className="mb-4 rounded-2xl border border-rose-200 bg-white px-4 py-3 text-rose-700 shadow-sm">
           <p className="font-semibold">{loadError}</p>
-          <button onClick={() => setReloadKey((prev) => prev + 1)} className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-white">
+          <button onClick={() => setReloadKey((prev) => prev + 1)} className="btn-primary mt-3">
             Réessayer
           </button>
         </div>
       )}
 
       {current?.flag && (
-        <div className="bg-white p-4 rounded-xl shadow-lg mb-4">
-          <img src={current.flag} alt="Drapeau" className="w-80 object-cover mx-auto" />
-          <p className={`mt-4 text-lg font-semibold ${message.includes("✅") ? "text-green-500" : "text-red-500"}`}>
+        <div className="card-frame mb-4">
+          <img src={current.flag} alt="Drapeau" className="w-72 sm:w-80 object-cover mx-auto rounded-xl" />
+          <p className={`mt-4 text-base font-semibold ${message.includes("✅") ? "text-emerald-600" : "text-rose-600"}`}>
             {message}
           </p>
         </div>
@@ -194,20 +217,20 @@ export default function CapitalsQuiz() {
           checkAnswer(e.target.value);
         }}
         placeholder="Entrez la capitale"
-        className="px-4 py-2 w-64 rounded-lg text-black border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+        className="input-field max-w-xs"
       />
 
-      <div className="flex gap-4 mt-4">
-        <button onClick={() => checkAnswer(answer, true)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg transition">
+      <div className="flex flex-wrap gap-3 mt-4 justify-center">
+        <button onClick={() => checkAnswer(answer, true)} className="btn-primary">
           Valider
         </button>
-        <button onClick={loadNextCapital} className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition">
+        <button onClick={loadNextCapital} className="btn-secondary">
           Passer
         </button>
       </div>
 
       {showAnswer && (
-        <button onClick={() => setMessage(`La bonne réponse était : ${current?.capital ?? ""}`)} className="mt-4 px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-lg shadow-lg transition">
+        <button onClick={() => setMessage(`La bonne réponse était : ${current?.capital ?? ""}`)} className="btn-ghost mt-4">
           Réponse
         </button>
       )}

@@ -6,6 +6,7 @@ import { fetchCountries } from "../lib/countriesClient";
 type Country = {
   name: string;
   flag: string;
+  unMember: boolean;
 };
 
 function normalizeString(str: string) {
@@ -47,6 +48,7 @@ const predefinedShortcuts: Record<string, string> = {
 };
 
 export default function BlurredFlagsQuiz() {
+  const [allCountries, setAllCountries] = useState<Country[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [current, setCurrent] = useState<Country | null>(null);
   const [answer, setAnswer] = useState("");
@@ -58,6 +60,7 @@ export default function BlurredFlagsQuiz() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [onlyUN, setOnlyUN] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -69,32 +72,11 @@ export default function BlurredFlagsQuiz() {
         if (!active) return;
         const formattedCountries = data.map((country: any) => ({
           name: country.translations?.fra?.common || country.name.common,
-          flag: country.flags.png
+          flag: country.flags.png,
+          unMember: country.unMember === true
         }));
 
-        const shortcuts: Record<string, string> = { ...predefinedShortcuts };
-        formattedCountries.forEach((country: Country) => {
-          const name = normalizeString(country.name);
-          const shortName = name.replace(/\b(iles|ile)\b/gi, "").trim();
-
-          if (shortName !== name) {
-            shortcuts[shortName] = country.name;
-          }
-
-          const nameWithoutDash = shortName.replace(/-/g, " ");
-          if (shortName !== nameWithoutDash) {
-            shortcuts[nameWithoutDash] = country.name;
-          }
-
-          const nameWithoutApostrophe = shortName.replace(/'/g, " ");
-          if (shortName !== nameWithoutApostrophe) {
-            shortcuts[nameWithoutApostrophe] = country.name;
-          }
-        });
-
-        setCountries(formattedCountries);
-        setCountryShortcuts(shortcuts);
-        setCurrent(formattedCountries[Math.floor(Math.random() * formattedCountries.length)]);
+        setAllCountries(formattedCountries);
       })
       .catch((err) => {
         if (!active) return;
@@ -110,6 +92,38 @@ export default function BlurredFlagsQuiz() {
       active = false;
     };
   }, [reloadKey]);
+
+  useEffect(() => {
+    const filtered = onlyUN ? allCountries.filter((country) => country.unMember) : allCountries;
+    setCountries(filtered);
+
+    const shortcuts: Record<string, string> = { ...predefinedShortcuts };
+    filtered.forEach((country) => {
+      const name = normalizeString(country.name);
+      const shortName = name.replace(/\b(iles|ile)\b/gi, "").trim();
+
+      if (shortName !== name) {
+        shortcuts[shortName] = country.name;
+      }
+
+      const nameWithoutDash = shortName.replace(/-/g, " ");
+      if (shortName !== nameWithoutDash) {
+        shortcuts[nameWithoutDash] = country.name;
+      }
+
+      const nameWithoutApostrophe = shortName.replace(/'/g, " ");
+      if (shortName !== nameWithoutApostrophe) {
+        shortcuts[nameWithoutApostrophe] = country.name;
+      }
+    });
+
+    setCountryShortcuts(shortcuts);
+    setCurrent(filtered.length > 0 ? filtered[Math.floor(Math.random() * filtered.length)] : null);
+    setAnswer("");
+    setMessage("");
+    setShowAnswer(false);
+    setBlurLevel(35);
+  }, [allCountries, onlyUN]);
 
   function loadNextFlag() {
     setAnswer("");
@@ -158,26 +172,36 @@ export default function BlurredFlagsQuiz() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-green-400 to-blue-500 text-white text-center">
-      <h2 className="text-4xl font-bold mb-6">Quel est ce pays ?</h2>
+    <div className="page-shell flex flex-col items-center justify-center text-center">
+      <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-slate-900">Quel est ce pays ?</h2>
 
-      {isLoading && <p className="text-white/90 mb-4">Chargement des pays...</p>}
+      <label className="mb-4 flex items-center gap-2 text-sm text-slate-600">
+        <input
+          type="checkbox"
+          checked={onlyUN}
+          onChange={(e) => setOnlyUN(e.target.checked)}
+          className="h-4 w-4"
+        />
+        <span>Pays ONU seulement</span>
+      </label>
+
+      {isLoading && <p className="text-slate-600 mb-4">Chargement des pays...</p>}
 
       {loadError && (
-        <div className="mb-4 rounded-lg border border-rose-200 bg-white/90 px-4 py-3 text-rose-700">
+        <div className="mb-4 rounded-2xl border border-rose-200 bg-white px-4 py-3 text-rose-700 shadow-sm">
           <p className="font-semibold">{loadError}</p>
-          <button onClick={() => setReloadKey((prev) => prev + 1)} className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-white">
+          <button onClick={() => setReloadKey((prev) => prev + 1)} className="btn-primary mt-3">
             Réessayer
           </button>
         </div>
       )}
 
       {current?.flag && (
-        <div className="relative">
+        <div className="card-frame mb-4">
           <img
             src={current.flag}
             alt="Drapeau"
-            className="w-80 h-56 mx-auto rounded-lg transition-all"
+            className="w-72 sm:w-80 h-56 mx-auto rounded-xl transition-all"
             style={{ filter: `blur(${blurLevel}px)` }}
           />
         </div>
@@ -188,25 +212,25 @@ export default function BlurredFlagsQuiz() {
         value={answer}
         onChange={(e) => handleInputChange(e.target.value)}
         placeholder="Entrez le nom du pays"
-        className="px-4 py-2 w-64 rounded-lg text-black border-2 border-gray-300 focus:border-blue-500 focus:outline-none mt-6"
+        className="input-field max-w-xs mt-4"
       />
 
-      <div className="flex gap-4 mt-4">
-        <button onClick={() => checkAnswer(answer, true)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg transition">
+      <div className="flex flex-wrap gap-3 mt-4 justify-center">
+        <button onClick={() => checkAnswer(answer, true)} className="btn-primary">
           Valider
         </button>
-        <button onClick={loadNextFlag} className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition">
+        <button onClick={loadNextFlag} className="btn-secondary">
           Passer
         </button>
       </div>
 
       {showAnswer && (
-        <button onClick={() => setMessage(`La bonne réponse était : ${current?.name ?? ""}`)} className="mt-4 px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-lg shadow-lg transition">
+        <button onClick={() => setMessage(`La bonne réponse était : ${current?.name ?? ""}`)} className="btn-ghost mt-4">
           Réponse
         </button>
       )}
 
-      <p className={`mt-4 text-lg font-semibold ${message.includes("✅") ? "text-green-500" : "text-red-500"}`}>
+      <p className={`mt-4 text-base font-semibold ${message.includes("✅") ? "text-emerald-600" : "text-rose-600"}`}>
         {message}
       </p>
     </div>

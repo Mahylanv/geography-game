@@ -287,111 +287,137 @@ export default function CountriesList() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 ">
-      <h2 className="text-3xl font-bold text-center mb-6">🌍 Liste des Pays</h2>
+    <div className="page-shell pt-24 sm:pt-28">
+      <div className="mx-auto w-full max-w-6xl space-y-6">
+        <header className="text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">Liste des Pays</h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-600">
+            Filtrez par continent ou recherchez un pays, une capitale ou une langue.
+          </p>
+        </header>
 
-      {isLoading && <p className="text-center text-gray-600 mb-6">Chargement des pays...</p>}
+        {isLoading && <p className="text-center text-slate-600">Chargement des pays...</p>}
 
-      {loadError && (
-        <div className="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-rose-700 text-center">
-          <p className="font-semibold">{loadError}</p>
-          <button onClick={() => setReloadKey((prev) => prev + 1)} className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-white">
-            Réessayer
-          </button>
+        {loadError && (
+          <div className="rounded-2xl border border-rose-200 bg-white px-4 py-3 text-rose-700 text-center shadow-sm">
+            <p className="font-semibold">{loadError}</p>
+            <button onClick={() => setReloadKey((prev) => prev + 1)} className="btn-primary mt-3">
+              Réessayer
+            </button>
+          </div>
+        )}
+
+        <div className="card-frame">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <input
+              type="text"
+              placeholder="Rechercher un pays, une capitale, une langue..."
+              className="input-field"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            <select
+              className="select-field sm:max-w-xs"
+              value={selectedContinent}
+              onChange={(e) => setSelectedContinent(e.target.value)}
+            >
+              <option value="">Tous les continents</option>
+              <option value="Europe">Europe</option>
+              <option value="Asie">Asie</option>
+              <option value="Afrique">Afrique</option>
+              <option value="Amérique du Nord">Amérique du Nord</option>
+              <option value="Amérique du Sud">Amérique du Sud</option>
+              <option value="Océanie">Océanie</option>
+              <option value="Antarctique">Antarctique</option>
+            </select>
+          </div>
         </div>
-      )}
 
-        <div className="flex flex-col md:flex-row justify-center items-center mb-6 gap-4">
-          <input
-            type="text"
-            placeholder="Rechercher un pays, une capitale, une langue..."
-            className="px-4 py-2 w-96 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-
-          <select
-            className="px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-700"
-            value={selectedContinent}
-            onChange={(e) => setSelectedContinent(e.target.value)}
-          >
-            <option value="">🌎 Tous les continents</option>
-            <option value="Europe">🇪🇺 Europe</option>
-            <option value="Asie">🌏 Asie</option>
-            <option value="Afrique">🌍 Afrique</option>
-            <option value="Amérique du Nord">🌎 Amérique du Nord</option>
-            <option value="Amérique du Sud">🌎 Amérique du Sud</option>
-            <option value="Océanie">🌊 Océanie</option>
-            <option value="Antarctique">❄️ Antarctique</option>
-          </select>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {filteredCountries.map((country, index) => (
-            <div
+            <button
+              type="button"
               key={country.id}
               onClick={() => openCountryDetails(index)}
-              className="bg-white shadow-lg rounded-xl p-4 flex flex-col items-center text-center border border-gray-200 cursor-pointer hover:shadow-xl"
+              className="surface p-4 flex flex-col items-center text-center cursor-pointer transition hover:-translate-y-1 hover:shadow-xl"
             >
-              <img src={country.flag} alt={`Drapeau de ${country.name}`} className="w-24 h-16 rounded-md object-cover" />
-              <h3 className="text-lg font-bold mt-2">{country.name}</h3>
-              <p className="text-gray-600">
+              <img
+                src={country.flag}
+                alt={`Drapeau de ${country.name}`}
+                className="w-24 h-16 rounded-md object-cover"
+              />
+              <h3 className="text-lg font-bold mt-2 text-slate-900">{country.name}</h3>
+              <p className="text-sm text-slate-600">
                 Capitale : <span className="font-semibold">{country.capital}</span>
               </p>
-            </div>
+            </button>
           ))}
         </div>
 
         {selectedCountryIndex !== null && (
           <div
             id="modal-overlay"
-            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center p-4"
             onClick={(e) => e.target.id === "modal-overlay" && closeDetails()}
           >
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full relative text-center">
-              <button onClick={closeDetails} className="absolute top-2 right-2 text-gray-600 text-2xl">
-                ✖
+            <div className="surface p-6 max-w-2xl w-full relative text-left">
+              <button onClick={closeDetails} className="btn-ghost absolute top-3 right-3">
+                Fermer
               </button>
-              <h2 className="text-2xl font-bold">{filteredCountries[selectedCountryIndex].name}</h2>
-              <img src={filteredCountries[selectedCountryIndex].flag} alt={filteredCountries[selectedCountryIndex].name} className="w-40 h-28 mx-auto my-4" />
-              <p>
-                <strong>Capitale :</strong> {filteredCountries[selectedCountryIndex].capital}
-              </p>
-              <p>
-                <strong>Population :</strong> {filteredCountries[selectedCountryIndex].population}
-              </p>
-              <p>
-                <strong>Superficie :</strong> {filteredCountries[selectedCountryIndex].area}
-              </p>
-              <p>
-                <strong>Continent :</strong> {filteredCountries[selectedCountryIndex].continent}
-              </p>
-              <p>
-                <strong>Langues :</strong> {filteredCountries[selectedCountryIndex].languages}
-              </p>
-              <p>
-                <strong>Devise :</strong> {filteredCountries[selectedCountryIndex].currency}
-              </p>
-              <p className="mt-4">
-                <strong>📍 Localisation :</strong>
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-slate-900">{filteredCountries[selectedCountryIndex].name}</h2>
+                <img
+                  src={filteredCountries[selectedCountryIndex].flag}
+                  alt={filteredCountries[selectedCountryIndex].name}
+                  className="w-40 h-28 mx-auto my-4 rounded-lg"
+                />
+              </div>
+              <div className="space-y-2 text-sm text-slate-700">
+                <p>
+                  <strong>Capitale :</strong> {filteredCountries[selectedCountryIndex].capital}
+                </p>
+                <p>
+                  <strong>Population :</strong> {filteredCountries[selectedCountryIndex].population}
+                </p>
+                <p>
+                  <strong>Superficie :</strong> {filteredCountries[selectedCountryIndex].area}
+                </p>
+                <p>
+                  <strong>Continent :</strong> {filteredCountries[selectedCountryIndex].continent}
+                </p>
+                <p>
+                  <strong>Langues :</strong> {filteredCountries[selectedCountryIndex].languages}
+                </p>
+                <p>
+                  <strong>Devise :</strong> {filteredCountries[selectedCountryIndex].currency}
+                </p>
+              </div>
+              <p className="mt-4 text-sm text-slate-700">
+                <strong>Localisation :</strong>
                 <a
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                     filteredCountries[selectedCountryIndex].name
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline ml-2"
+                  className="ml-2 text-teal-700 font-semibold hover:underline"
                 >
-                  Voir sur Google Maps 🌍
+                  Voir sur Google Maps
                 </a>
               </p>
-              <div className="flex justify-between mt-4">
-                <button onClick={prevCountry}>⬅️ Précédent</button>
-                <button onClick={nextCountry}>Suivant ➡️</button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-between mt-6">
+                <button onClick={prevCountry} className="btn-secondary w-full sm:w-auto">
+                  Précédent
+                </button>
+                <button onClick={nextCountry} className="btn-primary w-full sm:w-auto">
+                  Suivant
+                </button>
               </div>
             </div>
           </div>
         )}
+      </div>
     </div>
   );
 }

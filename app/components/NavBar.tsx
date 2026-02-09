@@ -1,12 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const NAV_LINKS = [
   { href: "/", label: "🏠 Accueil" },
-  { href: "/dle", label: "🌍 Daily Dle" },
+  { href: "/dle", label: "🌍 Pays mystère" },
   { href: "/flags", label: "🏳️ Quiz Drapeaux" },
   { href: "/capitals", label: "🏛️ Quiz Capitales" },
   { href: "/blurred-flags", label: "🌫️ Drapeau Flou" },
@@ -50,84 +51,111 @@ export default function NavBar() {
     return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   const linkClass = (href: string) =>
-    `px-4 py-2 rounded ${pathname === href ? "bg-blue-800" : "hover:bg-gray-700"}`;
+    `rounded-full px-3 py-2 text-sm font-semibold transition ${
+      pathname === href
+        ? "bg-slate-900 text-white shadow-sm shadow-slate-900/30"
+        : "text-slate-700 hover:bg-slate-200/70"
+    }`;
 
   return (
-    <nav className="bg-gray-900 text-white py-4 shadow-lg">
-      <div className="container mx-auto flex items-center justify-between px-4 md:px-0">
-        <Link href="/" className="text-lg font-semibold">
-          GeoDex
-        </Link>
+    <>
+      <nav className="sticky top-0 z-50 w-full border-b border-white/70 bg-white/70 backdrop-blur">
+        <div className="flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-10">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200/70 bg-white/80 shadow-sm">
+              <Image src="/logo.png" alt="Logo GeoDex" width={32} height={32} className="h-7 w-7 object-contain" />
+            </span>
+            <span className="text-base font-semibold tracking-tight text-slate-900">GeoDex</span>
+          </Link>
 
-        <div className="hidden md:flex flex-1 justify-center gap-6">
-          {NAV_LINKS.map((item) => (
-            <Link key={item.href} href={item.href} className={linkClass(item.href)}>
-              {item.label}
-            </Link>
-          ))}
+          <div className="hidden lg:flex flex-1 items-center justify-center gap-2">
+            {NAV_LINKS.map((item) => (
+              <Link key={item.href} href={item.href} className={linkClass(item.href)}>
+                {item.label}
+              </Link>
+            ))}
 
-          <div className="relative group">
-            <button className="px-4 py-2 rounded hover:bg-gray-700 flex items-center gap-2">
-              🏳️ Drapeaux ▾
-            </button>
-            <div className="absolute top-10 left-0 bg-gray-800 rounded shadow-lg py-2 w-56 hidden group-hover:block">
-              {FLAG_CONTINENTS.map((item) => (
-                <Link key={item.href} href={item.href} className="block px-4 py-2 hover:bg-gray-700">
-                  {item.label}
-                </Link>
-              ))}
+            <div className="relative group">
+              <button className="rounded-full px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200/70 flex items-center gap-2">
+                🏳️ Drapeaux ▾
+              </button>
+              <div className="absolute left-0 top-11 hidden w-56 rounded-2xl border border-slate-200 bg-white/95 py-2 shadow-xl group-hover:block">
+                {FLAG_CONTINENTS.map((item) => (
+                  <Link key={item.href} href={item.href} className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative group">
+              <button className="rounded-full px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200/70 flex items-center gap-2">
+                🏛️ Capitales ▾
+              </button>
+              <div className="absolute left-0 top-11 hidden w-56 rounded-2xl border border-slate-200 bg-white/95 py-2 shadow-xl group-hover:block">
+                {CAPITAL_CONTINENTS.map((item) => (
+                  <Link key={item.href} href={item.href} className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="relative group">
-            <button className="px-4 py-2 rounded hover:bg-gray-700 flex items-center gap-2">
-              🏛️ Capitales ▾
-            </button>
-            <div className="absolute top-10 left-0 bg-gray-800 rounded shadow-lg py-2 w-56 hidden group-hover:block">
-              {CAPITAL_CONTINENTS.map((item) => (
-                <Link key={item.href} href={item.href} className="block px-4 py-2 hover:bg-gray-700">
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
+          <button className="lg:hidden btn-ghost text-xl" onClick={() => setIsOpen(!isOpen)} aria-label="Menu">
+            {isOpen ? "✖" : "☰"}
+          </button>
         </div>
-
-        <button className="md:hidden focus:outline-none text-2xl z-[100]" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? "✖" : "☰"}
-        </button>
-      </div>
+      </nav>
 
       {isOpen && (
-        <div className="md:hidden pt-20 fixed inset-0 bg-gray-900 bg-opacity-90 flex flex-col items-center space-y-6 py-10 z-50">
-          <div className="flex flex-col items-center space-y-4 text-lg">
+        <div
+          className="lg:hidden fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm"
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            className="absolute inset-x-0 top-16 bottom-0 overflow-y-auto rounded-t-3xl bg-white px-6 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 h-1.5 w-12 rounded-full bg-slate-200 mx-auto" />
+            <div className="flex flex-col gap-2">
               {NAV_LINKS.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-xl hover:text-lime-400"
+                  className="rounded-2xl px-4 py-3 text-base font-semibold text-slate-900 hover:bg-slate-100"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
 
-              <div className="w-full">
+              <div className="mt-2 rounded-2xl border border-slate-200/80 p-3">
                 <button
                   onClick={() => setIsFlagsDropdownOpen(!isFlagsDropdownOpen)}
-                  className="text-xl rounded hover:bg-gray-700 px-4 py-2 w-full"
+                  className="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
                 >
-                  🏳️ Drapeaux ▾
+                  🏳️ Drapeaux <span>{isFlagsDropdownOpen ? "−" : "+"}</span>
                 </button>
                 {isFlagsDropdownOpen && (
-                  <div className="w-full rounded shadow-lg py-2 text-center">
+                  <div className="mt-2 flex flex-col gap-1">
                     {FLAG_CONTINENTS.map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
-                        className="block px-4 py-2 hover:bg-gray-700"
-                        onClick={() => setIsFlagsDropdownOpen(false)}
+                        className="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                        onClick={() => {
+                          setIsFlagsDropdownOpen(false);
+                          setIsOpen(false);
+                        }}
                       >
                         {item.label}
                       </Link>
@@ -136,21 +164,24 @@ export default function NavBar() {
                 )}
               </div>
 
-              <div className="w-full">
+              <div className="rounded-2xl border border-slate-200/80 p-3">
                 <button
                   onClick={() => setIsCapitalsDropdownOpen(!isCapitalsDropdownOpen)}
-                  className="text-xl rounded hover:bg-gray-700 px-4 py-2 w-full"
+                  className="flex w-full items-center justify-between text-sm font-semibold text-slate-700"
                 >
-                  🏛️ Capitales ▾
+                  🏛️ Capitales <span>{isCapitalsDropdownOpen ? "−" : "+"}</span>
                 </button>
                 {isCapitalsDropdownOpen && (
-                  <div className="w-full rounded shadow-lg py-2 text-center">
+                  <div className="mt-2 flex flex-col gap-1">
                     {CAPITAL_CONTINENTS.map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
-                        className="block px-4 py-2 hover:bg-gray-700"
-                        onClick={() => setIsCapitalsDropdownOpen(false)}
+                        className="rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                        onClick={() => {
+                          setIsCapitalsDropdownOpen(false);
+                          setIsOpen(false);
+                        }}
                       >
                         {item.label}
                       </Link>
@@ -158,9 +189,10 @@ export default function NavBar() {
                   </div>
                 )}
               </div>
+            </div>
           </div>
         </div>
       )}
-    </nav>
+    </>
   );
 }

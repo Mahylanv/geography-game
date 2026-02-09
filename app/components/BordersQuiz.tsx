@@ -7,9 +7,11 @@ type Country = {
   name: string;
   flag: string | null;
   borders: number;
+  unMember: boolean;
 };
 
 export default function BordersQuiz() {
+  const [allCountries, setAllCountries] = useState<Country[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [current, setCurrent] = useState<Country | null>(null);
   const [answer, setAnswer] = useState("");
@@ -17,6 +19,7 @@ export default function BordersQuiz() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [onlyUN, setOnlyUN] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -30,18 +33,20 @@ export default function BordersQuiz() {
           .map((country: any) => ({
             name: country.translations?.fra?.common || country.name.common,
             flag: country.flags?.png || null,
-            borders: country.borders ? country.borders.length : 0
+            borders: country.borders ? country.borders.length : 0,
+            unMember: country.unMember === true
           }))
           .filter((country: Country) => country.borders > 0);
 
-        setCountries(formattedCountries);
-        setLoading(false);
-        loadNextCountry(formattedCountries);
+        setAllCountries(formattedCountries);
       })
       .catch((err) => {
         if (!active) return;
         console.error("Erreur de récupération des pays :", err);
         setLoadError("Impossible de charger les pays. Vérifiez votre connexion puis réessayez.");
+      })
+      .finally(() => {
+        if (!active) return;
         setLoading(false);
       });
 
@@ -50,11 +55,19 @@ export default function BordersQuiz() {
     };
   }, [reloadKey]);
 
+  useEffect(() => {
+    const filtered = onlyUN ? allCountries.filter((country) => country.unMember) : allCountries;
+    setCountries(filtered);
+    loadNextCountry(filtered);
+  }, [allCountries, onlyUN]);
+
   function loadNextCountry(countryList = countries) {
     setMessage("");
     setAnswer("");
     if (countryList.length > 0) {
       setCurrent(countryList[Math.floor(Math.random() * countryList.length)]);
+    } else {
+      setCurrent(null);
     }
   }
 
@@ -77,28 +90,38 @@ export default function BordersQuiz() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-red-300 to-red-500 text-white text-center">
-      <h2 className="text-3xl font-bold mb-6">Combien de pays bordent ce pays ?</h2>
+    <div className="page-shell flex flex-col items-center justify-center text-center">
+      <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-slate-900">Combien de pays bordent ce pays ?</h2>
+
+      <label className="mb-4 flex items-center gap-2 text-sm text-slate-600">
+        <input
+          type="checkbox"
+          checked={onlyUN}
+          onChange={(e) => setOnlyUN(e.target.checked)}
+          className="h-4 w-4"
+        />
+        <span>Pays ONU seulement</span>
+      </label>
 
       {loading ? (
-        <p className="text-lg font-semibold">Chargement...</p>
+        <p className="text-slate-600 font-semibold">Chargement...</p>
       ) : loadError ? (
-        <div className="mb-4 rounded-lg border border-rose-200 bg-white/90 px-4 py-3 text-rose-700">
+        <div className="mb-4 rounded-2xl border border-rose-200 bg-white px-4 py-3 text-rose-700 shadow-sm">
           <p className="font-semibold">{loadError}</p>
-          <button onClick={() => setReloadKey((prev) => prev + 1)} className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-white">
+          <button onClick={() => setReloadKey((prev) => prev + 1)} className="btn-primary mt-3">
             Réessayer
           </button>
         </div>
       ) : current ? (
-        <div className="bg-white p-4 rounded-xl shadow-lg mb-4 text-black">
-          {current.flag && <img src={current.flag} alt="Drapeau" className="w-80 object-cover mx-auto mb-4" />}
-          <h3 className="text-2xl font-bold">{current.name}</h3>
-          <p className={`text-lg font-semibold ${message.includes("✅") ? "text-green-500" : "text-red-500"}`}>
+        <div className="card-frame mb-4 text-slate-900">
+          {current.flag && <img src={current.flag} alt="Drapeau" className="w-72 sm:w-80 object-cover mx-auto mb-4 rounded-xl" />}
+          <h3 className="text-xl font-semibold">{current.name}</h3>
+          <p className={`text-base font-semibold ${message.includes("✅") ? "text-emerald-600" : "text-rose-600"}`}>
             {message}
           </p>
         </div>
       ) : (
-        <p className="text-lg font-semibold">Aucune donnée disponible.</p>
+        <p className="text-slate-600 font-semibold">Aucune donnée disponible.</p>
       )}
 
       <input
@@ -106,15 +129,15 @@ export default function BordersQuiz() {
         value={answer}
         onChange={(e) => setAnswer(e.target.value)}
         placeholder="Entrez le nombre de pays frontaliers"
-        className="px-4 py-2 w-80 rounded-lg text-black border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+        className="input-field max-w-xs"
       />
 
-      <div className="flex gap-4 mt-4">
-        <button onClick={checkAnswer} className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg transition">
+      <div className="flex flex-wrap gap-3 mt-4 justify-center">
+        <button onClick={checkAnswer} className="btn-primary">
           Valider
         </button>
 
-        <button onClick={() => loadNextCountry()} className="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition">
+        <button onClick={() => loadNextCountry()} className="btn-secondary">
           Passer
         </button>
       </div>
