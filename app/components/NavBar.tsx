@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import type { TouchEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const NAV_LINKS = [
   { href: "/", label: "🏠 Accueil" },
@@ -38,6 +39,9 @@ export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isFlagsDropdownOpen, setIsFlagsDropdownOpen] = useState(false);
   const [isCapitalsDropdownOpen, setIsCapitalsDropdownOpen] = useState(false);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const touchStartScroll = useRef(0);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -58,6 +62,31 @@ export default function NavBar() {
     };
   }, [isOpen]);
 
+  function closeMenu() {
+    setIsOpen(false);
+    setIsFlagsDropdownOpen(false);
+    setIsCapitalsDropdownOpen(false);
+  }
+
+  function handleSheetTouchStart(event: TouchEvent<HTMLDivElement>) {
+    touchStartY.current = event.touches[0]?.clientY ?? null;
+    touchStartScroll.current = sheetRef.current?.scrollTop ?? 0;
+  }
+
+  function handleSheetTouchMove(event: TouchEvent<HTMLDivElement>) {
+    if (touchStartY.current === null) return;
+    const currentY = event.touches[0]?.clientY ?? 0;
+    const delta = currentY - touchStartY.current;
+    if (touchStartScroll.current <= 0 && delta > 80) {
+      closeMenu();
+      touchStartY.current = null;
+    }
+  }
+
+  function handleSheetTouchEnd() {
+    touchStartY.current = null;
+  }
+
   const linkClass = (href: string) =>
     `rounded-full px-3 py-2 text-sm font-semibold transition ${
       pathname === href
@@ -67,7 +96,7 @@ export default function NavBar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 w-full border-b border-white/70 bg-white/70 backdrop-blur">
+      <nav className="sticky top-0 z-50 w-full border-b border-white/70 bg-white/70 backdrop-blur pt-[env(safe-area-inset-top)]">
         <div className="flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-10">
           <Link href="/" className="flex items-center gap-2">
             <span className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200/70 bg-white/80 shadow-sm">
@@ -119,11 +148,15 @@ export default function NavBar() {
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
+          onClick={closeMenu}
         >
           <div
-            className="absolute inset-x-0 top-16 bottom-0 overflow-y-auto rounded-t-3xl bg-white px-6 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-2xl"
+            ref={sheetRef}
+            className="absolute inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] bottom-0 overflow-y-auto rounded-t-3xl bg-white px-6 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            onTouchStart={handleSheetTouchStart}
+            onTouchMove={handleSheetTouchMove}
+            onTouchEnd={handleSheetTouchEnd}
           >
             <div className="mb-4 h-1.5 w-12 rounded-full bg-slate-200 mx-auto" />
             <div className="flex flex-col gap-2">
