@@ -357,9 +357,12 @@ export default function CountriesList() {
 
         {selectedCountryIndex !== null && (
           <div
-            id="modal-overlay"
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center p-4"
-            onClick={(e) => e.target.id === "modal-overlay" && closeDetails()}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                closeDetails();
+              }
+            }}
           >
             <div className="surface p-6 max-w-2xl w-full relative text-left">
               <button onClick={closeDetails} className="btn-ghost absolute top-3 right-3">
