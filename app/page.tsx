@@ -1,7 +1,12 @@
-"use client";
-
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Accueil",
+  description:
+    "GeoDex est un jeu de géographie en français : quiz de drapeaux, capitales et pays pour améliorer sa culture générale."
+};
 
 export default function HomePage() {
   const title = "Bienvenue sur GeoDex";

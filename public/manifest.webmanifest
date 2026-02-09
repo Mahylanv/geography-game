@@ -2,20 +2,80 @@
   "name": "GeoDex",
   "short_name": "GeoDex",
   "description": "Quiz et défis de géographie",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#eef2f7",
   "theme_color": "#0f172a",
+  "lang": "fr-FR",
+  "orientation": "portrait",
+  "categories": ["education", "games", "utilities"],
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/web-app-manifest-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quiz Drapeaux",
+      "short_name": "Drapeaux",
+      "description": "Devinez les pays à partir de leur drapeau",
+      "url": "/flags",
+      "icons": [
+        {
+          "src": "/web-app-manifest-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Quiz Capitales",
+      "short_name": "Capitales",
+      "description": "Trouvez la capitale des pays du monde",
+      "url": "/capitals",
+      "icons": [
+        {
+          "src": "/web-app-manifest-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Pays mystère",
+      "short_name": "Mystère",
+      "description": "Jeu type Wordle sur les pays",
+      "url": "/dle",
+      "icons": [
+        {
+          "src": "/web-app-manifest-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
