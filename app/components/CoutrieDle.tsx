@@ -78,6 +78,7 @@ export default function CoutrieDle() {
   const [loadError, setLoadError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [onlyUN, setOnlyUN] = useState(false);
+  const [onlyNonUN, setOnlyNonUN] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -120,7 +121,11 @@ export default function CoutrieDle() {
   }, [reloadKey]);
 
   useEffect(() => {
-    const filtered = onlyUN ? allCountries.filter((c) => c.unMember) : allCountries;
+    const filtered = onlyUN
+      ? allCountries.filter((c) => c.unMember)
+      : onlyNonUN
+        ? allCountries.filter((c) => !c.unMember)
+        : allCountries;
     setCountries(filtered);
     const allContinents = [...new Set(filtered.map((c) => c.continent))];
     setIncludedContinents(allContinents);
@@ -129,7 +134,7 @@ export default function CoutrieDle() {
     setHasGuessed(false);
     setAnswer("");
     setShowSuggestions(false);
-  }, [allCountries, onlyUN]);
+  }, [allCountries, onlyUN, onlyNonUN]);
 
   useEffect(() => {
     if (countries.length && includedContinents.length) {
@@ -247,15 +252,34 @@ export default function CoutrieDle() {
     <div className="page-shell flex flex-col items-center text-slate-900">
       <h2 className="mt-6 text-3xl text-center font-bold mb-4">🌍 Devinez le pays mystère</h2>
 
-      <label className="mb-4 flex items-center gap-2 text-sm text-slate-600">
-        <input
-          type="checkbox"
-          checked={onlyUN}
-          onChange={(e) => setOnlyUN(e.target.checked)}
-          className="h-4 w-4"
-        />
-        <span>Pays ONU seulement</span>
-      </label>
+      <div className="mb-4 flex flex-col items-center gap-2 text-sm text-slate-600 sm:flex-row sm:gap-4">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={onlyUN}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setOnlyUN(checked);
+              if (checked) setOnlyNonUN(false);
+            }}
+            className="h-4 w-4"
+          />
+          <span>Pays ONU uniquement</span>
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={onlyNonUN}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setOnlyNonUN(checked);
+              if (checked) setOnlyUN(false);
+            }}
+            className="h-4 w-4"
+          />
+          <span>Pays non ONU uniquement</span>
+        </label>
+      </div>
 
       {isLoading && <p className="text-slate-600 mb-4">Chargement des pays...</p>}
 

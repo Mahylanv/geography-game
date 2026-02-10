@@ -14,7 +14,7 @@ export default function HomePage() {
   const highlightEnd = highlightStart + "GeoDex".length;
 
   return (
-    <div className="page-shell flex flex-col items-center justify-center">
+    <div className="flex h-[calc(100dvh-4rem-env(safe-area-inset-top)-1px)] min-h-[calc(100dvh-4rem-env(safe-area-inset-top)-1px)] w-full items-center justify-center overflow-hidden px-4 sm:px-8">
       <div className="card-frame w-full max-w-3xl text-center">
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/80 shadow-md animate-bounce">
           <Image src="/logo.png" alt="Logo GeoDex" width={56} height={56} className="h-12 w-12 object-contain" />

@@ -20,6 +20,7 @@ export default function BordersQuiz() {
   const [loadError, setLoadError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [onlyUN, setOnlyUN] = useState(false);
+  const [onlyNonUN, setOnlyNonUN] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -56,10 +57,14 @@ export default function BordersQuiz() {
   }, [reloadKey]);
 
   useEffect(() => {
-    const filtered = onlyUN ? allCountries.filter((country) => country.unMember) : allCountries;
+    const filtered = onlyUN
+      ? allCountries.filter((country) => country.unMember)
+      : onlyNonUN
+        ? allCountries.filter((country) => !country.unMember)
+        : allCountries;
     setCountries(filtered);
     loadNextCountry(filtered);
-  }, [allCountries, onlyUN]);
+  }, [allCountries, onlyUN, onlyNonUN]);
 
   function loadNextCountry(countryList = countries) {
     setMessage("");
@@ -93,15 +98,34 @@ export default function BordersQuiz() {
     <div className="page-shell flex flex-col items-center justify-center text-center">
       <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-slate-900">Combien de pays bordent ce pays ?</h2>
 
-      <label className="mb-4 flex items-center gap-2 text-sm text-slate-600">
-        <input
-          type="checkbox"
-          checked={onlyUN}
-          onChange={(e) => setOnlyUN(e.target.checked)}
-          className="h-4 w-4"
-        />
-        <span>Pays ONU seulement</span>
-      </label>
+      <div className="mb-4 flex flex-col items-center gap-2 text-sm text-slate-600 sm:flex-row sm:gap-4">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={onlyUN}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setOnlyUN(checked);
+              if (checked) setOnlyNonUN(false);
+            }}
+            className="h-4 w-4"
+          />
+          <span>Pays ONU uniquement</span>
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={onlyNonUN}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setOnlyNonUN(checked);
+              if (checked) setOnlyUN(false);
+            }}
+            className="h-4 w-4"
+          />
+          <span>Pays non ONU uniquement</span>
+        </label>
+      </div>
 
       {loading ? (
         <p className="text-slate-600 font-semibold">Chargement...</p>
