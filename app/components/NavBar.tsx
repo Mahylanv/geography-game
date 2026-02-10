@@ -39,12 +39,16 @@ export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isFlagsDropdownOpen, setIsFlagsDropdownOpen] = useState(false);
   const [isCapitalsDropdownOpen, setIsCapitalsDropdownOpen] = useState(false);
+  const [isFlagsMenuOpen, setIsFlagsMenuOpen] = useState(false);
+  const [isCapitalsMenuOpen, setIsCapitalsMenuOpen] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartScroll = useRef(0);
   const scrollLockY = useRef(0);
+  const closeFlagsTimer = useRef<number | null>(null);
+  const closeCapitalsTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -52,6 +56,8 @@ export default function NavBar() {
         setIsOpen(false);
         setIsFlagsDropdownOpen(false);
         setIsCapitalsDropdownOpen(false);
+        setIsFlagsMenuOpen(false);
+        setIsCapitalsMenuOpen(false);
       }
     };
     document.addEventListener("keydown", handleEscape);
@@ -89,13 +95,44 @@ export default function NavBar() {
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    return () => {
+      if (closeFlagsTimer.current) window.clearTimeout(closeFlagsTimer.current);
+      if (closeCapitalsTimer.current) window.clearTimeout(closeCapitalsTimer.current);
+    };
+  }, []);
+
   function closeMenu() {
     setIsOpen(false);
     setIsFlagsDropdownOpen(false);
     setIsCapitalsDropdownOpen(false);
+    setIsFlagsMenuOpen(false);
+    setIsCapitalsMenuOpen(false);
     setDragOffset(0);
     setIsDragging(false);
     touchStartY.current = null;
+  }
+
+  function openFlagsMenu() {
+    if (closeFlagsTimer.current) window.clearTimeout(closeFlagsTimer.current);
+    setIsFlagsMenuOpen(true);
+    setIsCapitalsMenuOpen(false);
+  }
+
+  function scheduleCloseFlagsMenu() {
+    if (closeFlagsTimer.current) window.clearTimeout(closeFlagsTimer.current);
+    closeFlagsTimer.current = window.setTimeout(() => setIsFlagsMenuOpen(false), 140);
+  }
+
+  function openCapitalsMenu() {
+    if (closeCapitalsTimer.current) window.clearTimeout(closeCapitalsTimer.current);
+    setIsCapitalsMenuOpen(true);
+    setIsFlagsMenuOpen(false);
+  }
+
+  function scheduleCloseCapitalsMenu() {
+    if (closeCapitalsTimer.current) window.clearTimeout(closeCapitalsTimer.current);
+    closeCapitalsTimer.current = window.setTimeout(() => setIsCapitalsMenuOpen(false), 140);
   }
 
   function handleSheetTouchStart(event: TouchEvent<HTMLDivElement>) {
@@ -156,11 +193,26 @@ export default function NavBar() {
               </Link>
             ))}
 
-            <div className="relative group">
-              <button className="rounded-full px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200/70 flex items-center gap-2">
+            <div
+              className="relative"
+              onMouseEnter={openFlagsMenu}
+              onMouseLeave={scheduleCloseFlagsMenu}
+            >
+              <button
+                className="rounded-full px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200/70 flex items-center gap-2"
+                aria-haspopup="true"
+                aria-expanded={isFlagsMenuOpen}
+                onFocus={openFlagsMenu}
+              >
                 🏳️ Drapeaux ▾
               </button>
-              <div className="absolute left-0 top-11 hidden w-56 rounded-2xl border border-slate-200 bg-white/95 py-2 shadow-xl group-hover:block">
+              <div
+                className={`absolute left-0 top-full mt-2 w-56 rounded-2xl border border-slate-200 bg-white/95 py-2 shadow-xl ${
+                  isFlagsMenuOpen ? "block" : "hidden"
+                }`}
+                onMouseEnter={openFlagsMenu}
+                onMouseLeave={scheduleCloseFlagsMenu}
+              >
                 {FLAG_CONTINENTS.map((item) => (
                   <Link key={item.href} href={item.href} className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
                     {item.label}
@@ -169,11 +221,26 @@ export default function NavBar() {
               </div>
             </div>
 
-            <div className="relative group">
-              <button className="rounded-full px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200/70 flex items-center gap-2">
+            <div
+              className="relative"
+              onMouseEnter={openCapitalsMenu}
+              onMouseLeave={scheduleCloseCapitalsMenu}
+            >
+              <button
+                className="rounded-full px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200/70 flex items-center gap-2"
+                aria-haspopup="true"
+                aria-expanded={isCapitalsMenuOpen}
+                onFocus={openCapitalsMenu}
+              >
                 🏛️ Capitales ▾
               </button>
-              <div className="absolute left-0 top-11 hidden w-56 rounded-2xl border border-slate-200 bg-white/95 py-2 shadow-xl group-hover:block">
+              <div
+                className={`absolute left-0 top-full mt-2 w-56 rounded-2xl border border-slate-200 bg-white/95 py-2 shadow-xl ${
+                  isCapitalsMenuOpen ? "block" : "hidden"
+                }`}
+                onMouseEnter={openCapitalsMenu}
+                onMouseLeave={scheduleCloseCapitalsMenu}
+              >
                 {CAPITAL_CONTINENTS.map((item) => (
                   <Link key={item.href} href={item.href} className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
                     {item.label}
