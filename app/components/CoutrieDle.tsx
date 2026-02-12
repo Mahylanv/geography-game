@@ -357,7 +357,6 @@ export default function CoutrieDle() {
               <th className="p-2">Langue</th>
               <th className="p-2">Devise</th>
               <th className="p-2">ONU</th>
-              <th className="p-2">Fuseau horaire</th>
             </tr>
           </thead>
           <tbody className="bg-white/80">
@@ -394,9 +393,6 @@ export default function CoutrieDle() {
                 </td>
                 <td className={`p-2 ${a.un === "green" ? "bg-green-200" : "bg-red-200"}`}>
                   {a.un === "green" ? "Même statut" : "Statut différent"}
-                </td>
-                <td className={`p-2 ${a.correct ? "bg-green-200" : a.timezone === "✅" ? "bg-green-200" : "bg-red-200"}`}>
-                  {a.correct ? "✅" : a.timezone}
                 </td>
               </tr>
             ))}
