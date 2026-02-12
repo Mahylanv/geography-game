@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { fetchCountries } from "../lib/countriesClient";
+import { translateCapital } from "../lib/capitalTranslations";
 
 const CONTINENTS_MAP: Record<string, string> = {
   Europe: "Europe",
@@ -56,6 +57,7 @@ export default function ContinentCapitalQuiz({ continent }: { continent: string 
       bruxelles: "brussels",
       lisbonne: "lisbon",
       moscou: "moscow",
+      pekin: "beijing",
       pékin: "beijing",
       athènes: "athens",
       "le caire": "cairo",
@@ -252,6 +254,7 @@ export default function ContinentCapitalQuiz({ continent }: { continent: string 
           ) : (
             <p className="text-slate-600">Aucun drapeau disponible</p>
           )}
+          <p className="mt-3 text-sm font-semibold text-slate-600">{current.name}</p>
           <p className={`mt-4 text-base font-semibold ${message.includes("✅") ? "text-emerald-600" : "text-rose-600"}`}>
             {message}
           </p>
@@ -282,7 +285,10 @@ export default function ContinentCapitalQuiz({ continent }: { continent: string 
       </div>
 
       {showAnswer && (
-        <button onClick={() => setMessage(`La bonne réponse était : ${current?.capital ?? ""}`)} className="btn-ghost mt-4">
+        <button
+          onClick={() => setMessage(`La bonne réponse était : ${translateCapital(current?.capital)}`)}
+          className="btn-ghost mt-4"
+        >
           Réponse
         </button>
       )}

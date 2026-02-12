@@ -1,6 +1,6 @@
 "use client";
 
-const CACHE_KEY = "geodex_countries_cache_v1";
+const CACHE_KEY = "geodex_countries_cache_v3";
 const CACHE_TTL_MS = 1000 * 60 * 60 * 12; // 12h
 const REQUEST_TIMEOUT_MS = 8000;
 
