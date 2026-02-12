@@ -87,6 +87,27 @@ function mergeCountries(core: any[], stats: any[]) {
   });
 }
 
+function applyOverrides(data: any[]) {
+  return data.map((country) => {
+    const cca3 = country?.cca3;
+    const commonName = country?.name?.common;
+    const isIndonesia = cca3 === "IDN" || commonName === "Indonesia";
+    const isGrenada = cca3 === "GRD" || commonName === "Grenada";
+    const isSanMarino = cca3 === "SMR" || commonName === "San Marino";
+
+    if (!isIndonesia && !isGrenada && !isSanMarino) return country;
+
+    return {
+      ...country,
+      capital: isIndonesia
+        ? ["Nusantara"]
+        : isGrenada
+          ? ["Saint-Georges"]
+          : ["Saint-Marin"]
+    };
+  });
+}
+
 async function loadCountries({ forceRefresh = false } = {}) {
   if (!forceRefresh && isCacheFresh()) {
     return { data: cache.data as any[], cacheStatus: "hit" as const };
@@ -102,7 +123,7 @@ async function loadCountries({ forceRefresh = false } = {}) {
         fetchCountriesArray(RESTCOUNTRIES_CORE_URL, "core"),
         fetchCountriesArray(RESTCOUNTRIES_STATS_URL, "stats")
       ]);
-      const data = mergeCountries(core, stats);
+      const data = applyOverrides(mergeCountries(core, stats));
       cache = { data, timestamp: Date.now() };
       return { data, cacheStatus: "miss" as const };
     } catch (error) {

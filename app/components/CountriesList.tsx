@@ -56,7 +56,11 @@ const capitalTranslations: Record<string, string> = {
   "sana'a": "Sanaa",
   thimphu: "Thimphou",
   "ulan bator": "Oulan-Bator",
-  "port of spain": "Port d'Espagne"
+  "port of spain": "Port d'Espagne",
+  "st. george's": "Saint-Georges",
+  "saint-georges": "Saint-Georges",
+  "city of san marino": "Saint-Marin",
+  "saint-marin": "Saint-Marin"
 };
 
 const languageTranslations: Record<string, string> = {

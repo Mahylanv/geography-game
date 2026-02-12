@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { fetchCountries } from "../lib/countriesClient";
+import { translateCapital } from "../lib/capitalTranslations";
 
 type Country = {
   name: string;
@@ -47,6 +48,7 @@ export default function CapitalsQuiz() {
       bruxelles: "brussels",
       lisbonne: "lisbon",
       moscou: "moscow",
+      pekin: "beijing",
       pékin: "beijing",
       athènes: "athens",
       "le caire": "cairo",
@@ -227,6 +229,7 @@ export default function CapitalsQuiz() {
       {current?.flag && (
         <div className="card-frame mb-4">
           <img src={current.flag} alt="Drapeau" className="w-72 sm:w-80 object-cover mx-auto rounded-xl" />
+          <p className="mt-3 text-sm font-semibold text-slate-600">{current.name}</p>
           <p className={`mt-4 text-base font-semibold ${message.includes("✅") ? "text-emerald-600" : "text-rose-600"}`}>
             {message}
           </p>
@@ -254,7 +257,10 @@ export default function CapitalsQuiz() {
       </div>
 
       {showAnswer && (
-        <button onClick={() => setMessage(`La bonne réponse était : ${current?.capital ?? ""}`)} className="btn-ghost mt-4">
+        <button
+          onClick={() => setMessage(`La bonne réponse était : ${translateCapital(current?.capital)}`)}
+          className="btn-ghost mt-4"
+        >
           Réponse
         </button>
       )}
