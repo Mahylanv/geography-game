@@ -1,6 +1,6 @@
 "use client";
 
-const CACHE_KEY = "geodex_countries_cache_v3";
+const CACHE_KEY = "geodex_countries_cache_v5";
 const CACHE_TTL_MS = 1000 * 60 * 60 * 12; // 12h
 const REQUEST_TIMEOUT_MS = 8000;
 
@@ -59,7 +59,8 @@ export async function fetchCountries({ forceRefresh = false } = {}) {
   const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
-    const url = `/api/countries${forceRefresh ? "?refresh=1" : ""}`;
+    const shouldRefreshServer = forceRefresh || !cache;
+    const url = `/api/countries${shouldRefreshServer ? "?refresh=1" : ""}`;
     const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
     if (!response.ok) {
       throw new Error(`API error ${response.status}`);

@@ -78,7 +78,7 @@ export default function ContinentFlagQuiz({ continent }: { continent: string }) 
           .filter((country: any) => country.continents?.includes(CONTINENTS[continent]))
           .map((country: any) => ({
             name: country.translations?.fra?.common || country.name.common,
-            flag: country.flags.png,
+            flag: country.flags?.svg || country.flags?.png || "",
             unMember: country.unMember === true
           }));
 

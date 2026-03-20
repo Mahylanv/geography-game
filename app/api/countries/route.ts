@@ -94,16 +94,20 @@ function applyOverrides(data: any[]) {
     const isIndonesia = cca3 === "IDN" || commonName === "Indonesia";
     const isGrenada = cca3 === "GRD" || commonName === "Grenada";
     const isSanMarino = cca3 === "SMR" || commonName === "San Marino";
+    const isTimorLeste = cca3 === "TLS" || commonName === "Timor-Leste";
 
-    if (!isIndonesia && !isGrenada && !isSanMarino) return country;
+    if (!isIndonesia && !isGrenada && !isSanMarino && !isTimorLeste) return country;
 
     return {
       ...country,
+      continents: isTimorLeste ? ["Asia"] : country.continents,
       capital: isIndonesia
         ? ["Nusantara"]
         : isGrenada
           ? ["Saint-Georges"]
-          : ["Saint-Marin"]
+          : isSanMarino
+            ? ["Saint-Marin"]
+            : country.capital
     };
   });
 }

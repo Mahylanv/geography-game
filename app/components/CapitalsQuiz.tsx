@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchCountries } from "../lib/countriesClient";
+import {
+  buildCapitalShortcuts,
+  isCapitalAnswerCorrect,
+  PREDEFINED_CAPITAL_SHORTCUTS
+} from "../lib/capitalAnswers";
 import { translateCapital } from "../lib/capitalTranslations";
 
 type Country = {
@@ -10,17 +15,6 @@ type Country = {
   flag: string;
   unMember: boolean;
 };
-
-function normalizeString(str: string) {
-  return str
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/-/g, " ")
-    .replace(/'/g, " ")
-    .replace(/\b(city of|city)\b/g, "")
-    .trim();
-}
 
 export default function CapitalsQuiz() {
   const [allCountries, setAllCountries] = useState<Country[]>([]);
@@ -36,56 +30,6 @@ export default function CapitalsQuiz() {
   const [onlyUN, setOnlyUN] = useState(false);
   const [onlyNonUN, setOnlyNonUN] = useState(false);
 
-  const predefinedShortcuts = useMemo(
-    () => ({
-      kiev: "kyiv",
-      beyrouth: "beirut",
-      vienne: "vienna",
-      copenhague: "copenhagen",
-      prague: "prague",
-      varsovie: "warsaw",
-      bucarest: "bucharest",
-      bruxelles: "brussels",
-      lisbonne: "lisbon",
-      moscou: "moscow",
-      pekin: "beijing",
-      pékin: "beijing",
-      athènes: "athens",
-      "le caire": "cairo",
-      "la havane": "havana",
-      mexico: "mexico city",
-      londres: "london",
-      damas: "damascus",
-      washington: "washington, d.c.",
-      riyad: "riyadh",
-      manille: "manila",
-      bakou: "baku",
-      tachkent: "tashkent",
-      mogadiscio: "mogadishu",
-      beijing: "pekin",
-      teheran: "tehran",
-      nicosie: "nicosia",
-      "saint domingue": "santo domingo",
-      "andorre la vieille": "andorra la vella",
-      "la valette": "valletta",
-      bagdad: "baghdad",
-      kathmandou: "kathmandu",
-      douchanbé: "dushanbe",
-      singapour: "singapore",
-      tbilissi: "tbilisi",
-      erevan: "yerevan",
-      kaboul: "kabul",
-      "addis abeba": "addis ababa",
-      alger: "algiers",
-      dacca: "dhaka",
-      sanaa: "sana'a",
-      thimphou: "thimphu",
-      "oulan bator": "ulan bator",
-      "port d'espagne": "port of spain"
-    }),
-    []
-  );
-
   useEffect(() => {
     let active = true;
     setIsLoading(true);
@@ -99,7 +43,7 @@ export default function CapitalsQuiz() {
           .map((country: any) => ({
             name: country.translations?.fra?.common || country.name.common,
             capital: country.translations?.fra?.capital || country.capital[0],
-            flag: country.flags.png,
+            flag: country.flags?.svg || country.flags?.png || "",
             unMember: country.unMember === true
           }));
 
@@ -127,31 +71,12 @@ export default function CapitalsQuiz() {
         ? allCountries.filter((country) => !country.unMember)
         : allCountries;
     setCountries(filtered);
-
-    const shortcuts: Record<string, string> = { ...predefinedShortcuts };
-    filtered.forEach((country) => {
-      const capitalEn = normalizeString(country.capital);
-      const capitalFr = normalizeString(country.capital);
-
-      shortcuts[capitalFr] = capitalEn;
-
-      const capitalWithoutDash = capitalFr.replace(/-/g, " ");
-      if (capitalFr !== capitalWithoutDash) {
-        shortcuts[capitalWithoutDash] = capitalEn;
-      }
-
-      const capitalWithoutApostrophe = capitalFr.replace(/'/g, " ");
-      if (capitalFr !== capitalWithoutApostrophe) {
-        shortcuts[capitalWithoutApostrophe] = capitalEn;
-      }
-    });
-
-    setCapitalShortcuts(shortcuts);
+    setCapitalShortcuts(buildCapitalShortcuts(PREDEFINED_CAPITAL_SHORTCUTS, filtered.map((country) => country.capital)));
     setCurrent(filtered.length > 0 ? filtered[Math.floor(Math.random() * filtered.length)] : null);
     setAnswer("");
     setMessage("");
     setShowAnswer(false);
-  }, [allCountries, onlyUN, onlyNonUN, predefinedShortcuts]);
+  }, [allCountries, onlyUN, onlyNonUN]);
 
   function loadNextCapital() {
     setAnswer("");
@@ -163,14 +88,8 @@ export default function CapitalsQuiz() {
 
   function checkAnswer(userAnswer: string, manualValidation = false) {
     if (!current) return;
-    let normalizedUserAnswer = normalizeString(userAnswer);
-    const normalizedCorrectAnswer = normalizeString(current.capital);
 
-    if (capitalShortcuts[normalizedUserAnswer]) {
-      normalizedUserAnswer = normalizeString(capitalShortcuts[normalizedUserAnswer]);
-    }
-
-    if (normalizedUserAnswer === normalizedCorrectAnswer) {
+    if (isCapitalAnswerCorrect(userAnswer, current.capital, capitalShortcuts)) {
       setMessage("✅ Correct !");
       setTimeout(loadNextCapital, 1000);
       return;
