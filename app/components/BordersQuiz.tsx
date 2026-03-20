@@ -33,7 +33,7 @@ export default function BordersQuiz() {
         const formattedCountries = data
           .map((country: any) => ({
             name: country.translations?.fra?.common || country.name.common,
-            flag: country.flags?.png || null,
+            flag: country.flags?.svg || country.flags?.png || null,
             borders: country.borders ? country.borders.length : 0,
             unMember: country.unMember === true
           }))

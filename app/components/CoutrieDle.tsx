@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { fetchCountries } from "../lib/countriesClient";
 
 type Country = {
+  code: string;
   name: string;
+  displayName: string;
   population: number;
   area: number;
   borders: number;
@@ -19,6 +21,7 @@ type Country = {
 };
 
 type Attempt = {
+  code: string;
   name: string;
   flag: string | null;
   population: "green" | "red" | "gray";
@@ -80,6 +83,8 @@ export default function CoutrieDle() {
   const [onlyUN, setOnlyUN] = useState(false);
   const [onlyNonUN, setOnlyNonUN] = useState(false);
 
+  const attemptedCountryCodes = new Set(attempts.map((attempt) => attempt.code));
+
   useEffect(() => {
     let active = true;
     setIsLoading(true);
@@ -88,20 +93,46 @@ export default function CoutrieDle() {
     fetchCountries({ forceRefresh: reloadKey > 0 })
       .then((data) => {
         if (!active) return;
-        const mapped: Country[] = data.map((c: any) => ({
-          name: c.translations?.fra?.common || c.name.common,
-          population: typeof c.population === "number" ? c.population : 0,
-          area: typeof c.area === "number" ? c.area : 0,
-          borders: Array.isArray(c.borders) ? c.borders.length : 0,
-          continent: c.continents?.[0] || "Inconnu",
-          flag: c.flags?.png || null,
-          latlng: Array.isArray(c.latlng) && c.latlng.length >= 2 ? [c.latlng[0], c.latlng[1]] : [0, 0],
-          languages: Object.values(c.languages || {}).map((lang: any) => String(lang)),
-          currencies: Object.keys(c.currencies || {}),
-          capital: c.capital?.[0] || "",
-          unMember: c.unMember === true,
-          timezones: Array.isArray(c.timezones) ? c.timezones.map((tz: any) => String(tz)) : []
-        }));
+        const mappedBase = data.map((c: any) => {
+          const latlng: [number, number] =
+            Array.isArray(c.latlng) && c.latlng.length >= 2 ? [c.latlng[0], c.latlng[1]] : [0, 0];
+
+          return {
+            code: c.cca3 || c.name?.common || "UNKNOWN",
+            name: c.translations?.fra?.common || c.name.common,
+            englishName: c.name?.common || "",
+            frenchOfficialName: c.translations?.fra?.official || "",
+            officialName: c.name?.official || "",
+            population: typeof c.population === "number" ? c.population : 0,
+            area: typeof c.area === "number" ? c.area : 0,
+            borders: Array.isArray(c.borders) ? c.borders.length : 0,
+            continent: c.continents?.[0] || "Inconnu",
+            flag: c.flags?.svg || c.flags?.png || null,
+            latlng,
+            languages: Object.values(c.languages || {}).map((lang: any) => String(lang)),
+            currencies: Object.keys(c.currencies || {}),
+            capital: c.capital?.[0] || "",
+            unMember: c.unMember === true,
+            timezones: Array.isArray(c.timezones) ? c.timezones.map((tz: any) => String(tz)) : []
+          };
+        });
+
+        const duplicateCounts = mappedBase.reduce<Record<string, number>>((acc, country) => {
+          acc[country.name] = (acc[country.name] || 0) + 1;
+          return acc;
+        }, {});
+
+        const mapped: Country[] = mappedBase.map(({ englishName, frenchOfficialName, officialName, ...country }) => {
+          const hasDuplicateName = duplicateCounts[country.name] > 1;
+          const disambiguator = [englishName, frenchOfficialName, officialName, country.code].find(
+            (value) => value && normalizeString(value) !== normalizeString(country.name)
+          );
+
+          return {
+            ...country,
+            displayName: hasDuplicateName && disambiguator ? `${country.name} (${disambiguator})` : country.name
+          };
+        });
 
         setAllCountries(mapped);
       })
@@ -163,18 +194,29 @@ export default function CoutrieDle() {
     setShowSuggestions(false);
   }
 
-  function checkAnswer(name?: string) {
+  function checkAnswer(selectedCountry?: Country) {
     if (!target || gameWon) return;
 
-    const userInput = normalizeString(name || answer);
-    const match = countries.find((c) => normalizeString(c.name) === userInput);
     setShowSuggestions(false);
-    if (!match) return;
+    const normalizedAnswer = normalizeString(answer);
+    const exactDisplayMatches = countries.filter((c) => normalizeString(c.displayName) === normalizedAnswer);
+    const exactNameMatches = countries.filter((c) => normalizeString(c.name) === normalizedAnswer);
+    const match =
+      selectedCountry ||
+      exactDisplayMatches[0] ||
+      (exactNameMatches.length === 1 ? exactNameMatches[0] : null);
 
-    if (match.name === target.name) {
+    if (!match) return;
+    if (attemptedCountryCodes.has(match.code)) {
+      setAnswer("");
+      return;
+    }
+
+    if (match.code === target.code) {
       setGameWon(true);
       const victoryRow: Attempt = {
-        name: match.name,
+        code: match.code,
+        name: match.displayName,
         flag: match.flag,
         population: "green",
         area: "green",
@@ -192,7 +234,8 @@ export default function CoutrieDle() {
       setAttempts((prev) => [...prev, victoryRow]);
     } else {
       const hints: Attempt = {
-        name: match.name,
+        code: match.code,
+        name: match.displayName,
         flag: match.flag,
         population: match.population > target.population ? "red" : match.population < target.population ? "green" : "gray",
         area: match.area > target.area ? "red" : match.area < target.area ? "green" : "gray",
@@ -232,9 +275,15 @@ export default function CoutrieDle() {
     setAnswer("");
   }
 
-  const filteredSuggestions = countries.filter(
-    (c) => normalizeString(c.name).includes(normalizeString(answer)) && answer.length > 1
-  );
+  const normalizedAnswer = normalizeString(answer);
+  const filteredSuggestions = countries.filter((c) => {
+    if (answer.length <= 1 || attemptedCountryCodes.has(c.code)) return false;
+
+    return (
+      normalizeString(c.name).includes(normalizedAnswer) ||
+      normalizeString(c.displayName).includes(normalizedAnswer)
+    );
+  });
 
   const uniqueContinents = [...new Set(countries.map((c) => c.continent))];
   const continentLabels: Record<string, string> = {
@@ -316,12 +365,12 @@ export default function CoutrieDle() {
           <ul className="absolute top-full left-0 w-full max-h-60 overflow-y-auto bg-white text-slate-900 rounded-xl shadow z-10">
             {filteredSuggestions.map((c, i) => (
               <li
-                key={`${c.name}-${i}`}
+                key={`${c.code}-${i}`}
                 className="flex items-center gap-3 px-3 py-2 hover:bg-slate-100 cursor-pointer"
-                onClick={() => checkAnswer(c.name)}
+                onClick={() => checkAnswer(c)}
               >
                 {c.flag && <img src={c.flag} alt="flag" className="w-6 h-4 object-cover" />}
-                <span>{c.name}</span>
+                <span>{c.displayName}</span>
               </li>
             ))}
           </ul>

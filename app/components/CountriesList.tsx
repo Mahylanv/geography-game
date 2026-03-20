@@ -202,7 +202,7 @@ export default function CountriesList() {
             id: index,
             name: capitalizeFirstLetter(correctedName),
             capital: capitalFr,
-            flag: country.flags?.png || "",
+            flag: country.flags?.svg || country.flags?.png || "",
             population: country.population ? country.population.toLocaleString() : "Inconnue",
             area: country.area ? `${country.area.toLocaleString()} km²` : "Inconnue",
             continent: translations.continents[country.continents?.[0] as keyof typeof translations.continents] || "Inconnu",

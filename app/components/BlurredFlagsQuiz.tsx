@@ -73,7 +73,7 @@ export default function BlurredFlagsQuiz() {
         if (!active) return;
         const formattedCountries = data.map((country: any) => ({
           name: country.translations?.fra?.common || country.name.common,
-          flag: country.flags.png,
+          flag: country.flags?.svg || country.flags?.png || "",
           unMember: country.unMember === true
         }));
 

@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchCountries } from "../lib/countriesClient";
+import {
+  buildCapitalShortcuts,
+  isCapitalAnswerCorrect,
+  PREDEFINED_CAPITAL_SHORTCUTS
+} from "../lib/capitalAnswers";
 import { translateCapital } from "../lib/capitalTranslations";
 
 const CONTINENTS_MAP: Record<string, string> = {
@@ -12,17 +17,6 @@ const CONTINENTS_MAP: Record<string, string> = {
   "Amérique du Sud": "South America",
   Océanie: "Oceania"
 };
-
-function normalizeString(str: string) {
-  return str
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/-/g, " ")
-    .replace(/'/g, " ")
-    .replace(/\b(city of|city)\b/g, "")
-    .trim();
-}
 
 type Country = {
   name: string;
@@ -45,52 +39,6 @@ export default function ContinentCapitalQuiz({ continent }: { continent: string 
   const [onlyUN, setOnlyUN] = useState(false);
   const [onlyNonUN, setOnlyNonUN] = useState(false);
 
-  const predefinedShortcuts = useMemo(
-    () => ({
-      kiev: "kyiv",
-      beyrouth: "beirut",
-      vienne: "vienna",
-      copenhague: "copenhagen",
-      prague: "prague",
-      varsovie: "warsaw",
-      bucarest: "bucharest",
-      bruxelles: "brussels",
-      lisbonne: "lisbon",
-      moscou: "moscow",
-      pekin: "beijing",
-      pékin: "beijing",
-      athènes: "athens",
-      "le caire": "cairo",
-      "la havane": "havana",
-      mexico: "mexico city",
-      londres: "london",
-      washington: "washington, d.c.",
-      riyad: "riyadh",
-      manille: "manila",
-      bakou: "baku",
-      tachkent: "tashkent",
-      mogadiscio: "mogadishu",
-      teheran: "tehran",
-      nicosie: "nicosia",
-      "saint domingue": "santo domingo",
-      "andorre la vieille": "andorra la vella",
-      "la valette": "valletta",
-      bagdad: "baghdad",
-      kathmandou: "kathmandu",
-      singapour: "singapore",
-      erevan: "yerevan",
-      kaboul: "kabul",
-      "addis abeba": "addis ababa",
-      alger: "algiers",
-      dacca: "dhaka",
-      sanaa: "sana'a",
-      thimphou: "thimphu",
-      "oulan bator": "ulan bator",
-      "port d'espagne": "port of spain"
-    }),
-    []
-  );
-
   useEffect(() => {
     let active = true;
     setLoading(true);
@@ -110,7 +58,7 @@ export default function ContinentCapitalQuiz({ continent }: { continent: string 
           .map((country: any) => ({
             name: country.translations?.fra?.common || country.name.common,
             capital: country.translations?.fra?.capital || country.capital[0],
-            flag: country.flags?.png || null,
+            flag: country.flags?.svg || country.flags?.png || null,
             unMember: country.unMember === true
           }));
 
@@ -129,7 +77,7 @@ export default function ContinentCapitalQuiz({ continent }: { continent: string 
     return () => {
       active = false;
     };
-  }, [continent, predefinedShortcuts, reloadKey]);
+  }, [continent, reloadKey]);
 
   useEffect(() => {
     const filtered = onlyUN
@@ -144,31 +92,12 @@ export default function ContinentCapitalQuiz({ continent }: { continent: string 
       setCapitalShortcuts({});
       return;
     }
-
-    const shortcuts: Record<string, string> = { ...predefinedShortcuts };
-    filtered.forEach((country) => {
-      const capitalEn = normalizeString(country.capital);
-      const capitalFr = normalizeString(country.capital);
-
-      shortcuts[capitalFr] = capitalEn;
-
-      const capitalWithoutDash = capitalFr.replace(/-/g, " ");
-      if (capitalFr !== capitalWithoutDash) {
-        shortcuts[capitalWithoutDash] = capitalEn;
-      }
-
-      const capitalWithoutApostrophe = capitalFr.replace(/'/g, " ");
-      if (capitalFr !== capitalWithoutApostrophe) {
-        shortcuts[capitalWithoutApostrophe] = capitalEn;
-      }
-    });
-
-    setCapitalShortcuts(shortcuts);
+    setCapitalShortcuts(buildCapitalShortcuts(PREDEFINED_CAPITAL_SHORTCUTS, filtered.map((country) => country.capital)));
     setCurrent(filtered[Math.floor(Math.random() * filtered.length)]);
     setAnswer("");
     setMessage("");
     setShowAnswer(false);
-  }, [allCountries, onlyUN, onlyNonUN, predefinedShortcuts]);
+  }, [allCountries, onlyUN, onlyNonUN]);
 
   function loadNextCapital() {
     setAnswer("");
@@ -185,14 +114,7 @@ export default function ContinentCapitalQuiz({ continent }: { continent: string 
   function checkAnswer(userAnswer: string, manualValidation = false) {
     if (!current) return;
 
-    let normalizedUserAnswer = normalizeString(userAnswer);
-    const normalizedCorrectAnswer = normalizeString(current.capital);
-
-    if (capitalShortcuts[normalizedUserAnswer]) {
-      normalizedUserAnswer = normalizeString(capitalShortcuts[normalizedUserAnswer]);
-    }
-
-    if (normalizedUserAnswer === normalizedCorrectAnswer) {
+    if (isCapitalAnswerCorrect(userAnswer, current.capital, capitalShortcuts)) {
       setMessage("✅ Correct !");
       setShowAnswer(false);
       setTimeout(loadNextCapital, 1000);
